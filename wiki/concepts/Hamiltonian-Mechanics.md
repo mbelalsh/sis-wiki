@@ -91,7 +91,8 @@ Hamiltonian mechanics is the **structural foundation** for SiS architectures tar
 - [[Symplectic-Gradient]] — the vector field `S_H = (∂H/∂p, −∂H/∂q)` whose integration gives Hamiltonian flow
 - [[Hamiltonian-Neural-Network]] — the architecture that parameterizes `H` with a neural net
 - [[HNN]] — paper that introduced the NN parameterization
-- [[Lagrangian-Mechanics]] *(not yet ingested)* — Legendre-dual formulation; `L(q, q̇) = pq̇ − H(q,p)`
+- [[Lagrangian-Mechanics]] — Legendre-dual formulation; `L(q, q̇) = pq̇ − H(q,p)`
+- [[Hamiltonian-vs-Lagrangian-Duality]] — design-decision synthesis: when to use which formulation for CTPC
 - [[Port-Hamiltonian-Systems]] *(not yet ingested)* — dissipative extension `dx/dt = (J − R)∇H + Bu`
 
 ## Open Questions

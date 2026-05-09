@@ -92,7 +92,9 @@ The symplectic gradient is the **mathematical object that makes [[Hamiltonian-Ne
 - [[Hamiltonian-Mechanics]] — the framework where the symplectic gradient lives
 - [[Hamiltonian-Neural-Network]] — the NN architecture that uses it
 - [[HNN]] — paper that ties it to ML
-- [[Lagrangian-Mechanics]] *(not yet ingested)* — alternative formulation related by Legendre transform; the analogue of `S_H` is the Euler-Lagrange operator
+- [[Lagrangian-Mechanics]] — alternative formulation related by Legendre transform
+- [[Euler-Lagrange-Equation]] — the Lagrangian-side analogue of the symplectic-gradient operator
+- [[Hamiltonian-vs-Lagrangian-Duality]] — when to compute dynamics via symplectic gradient vs Euler-Lagrange
 
 ## Open Questions
 

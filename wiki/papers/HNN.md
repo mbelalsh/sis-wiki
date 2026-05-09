@@ -101,6 +101,9 @@ Specifically for CTPC:
 - [[Symplectic-Gradient]] — the math object that produces Hamilton's equations
 - [[PeRCNN]] — sister physics-as-architecture paper for spatial PDE structure (this paper is the time-evolution analogue)
 - [[Port-Hamiltonian-Neural-Networks]] *(not yet ingested)* — adds dissipation to make this useful for friction / drag / SRP
+- [[LNN]] — Lagrangian counterpart paper; co-authored by Greydanus
+- [[Lagrangian-Neural-Network]] — Lagrangian-side architecture; works in arbitrary (non-canonical) coordinates
+- [[Hamiltonian-vs-Lagrangian-Duality]] — synthesis: when to pick HNN vs LNN for CTPC
 
 ## Open Questions
 

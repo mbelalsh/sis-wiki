@@ -102,7 +102,8 @@ This is the canonical pattern for **conservative-system corrector architectures*
 - [[Hamiltonian-Mechanics]] — foundational physics
 - [[Symplectic-Gradient]] — the math object that produces Hamilton's equations
 - [[Port-Hamiltonian-Neural-Networks]] *(not yet ingested)* — dissipative extension
-- [[Lagrangian-Neural-Networks]] *(not yet ingested)* — Legendre-dual architecture
+- [[Lagrangian-Neural-Network]] — Legendre-dual architecture (works with non-canonical coords)
+- [[Hamiltonian-vs-Lagrangian-Duality]] — synthesis: when to pick HNN vs LNN for CTPC
 - [[PeRCNN]] — physics-as-architecture sibling for spatial PDEs
 
 ## Open Questions
