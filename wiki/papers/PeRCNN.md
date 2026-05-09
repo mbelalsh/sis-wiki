@@ -42,7 +42,7 @@ where `ℱ̂` is parameterized by the network. The Π-block (Eq. 8) approximates
 
 `N_l` parallel conv layers feed an element-wise product → 1×1 conv combines channels. **Theorem 1** (paper, Methods): for any continuous `ℱ : ℝ^s → ℝ`, sufficient `M, N` make the Π-block ε-close. With FD-stencil convolutional filters (Lemma 1), the differential operators inside `ℱ` come along for free.
 
-When a term is *known* (e.g. `Δu`), it bypasses the Π-block via a [[Physics-Based Finite-Difference Convolutional Layer]] short-cut connection — frozen stencil, scalar coefficient learnable. Boundary conditions are enforced by [[Physics-Based Padding for Boundary Conditions]] applied to every recurrent input.
+When a term is *known* (e.g. `Δu`), it bypasses the Π-block via a [[Physics-Based-FD-Convolutional-Layer]] short-cut connection — frozen stencil, scalar coefficient learnable. Boundary conditions are enforced by [[Physics-Based-Padding]] applied to every recurrent input.
 
 ### Code Correspondence
 
@@ -100,9 +100,10 @@ PeRCNN does **not** enforce dissipation `Ḣ ≤ 0` — that's an energy/Lyapuno
 
 ## Connections
 
-- [[Physics-Based Finite-Difference Convolutional Layer]] — the frozen-stencil short-cut connection that hard-encodes known PDE terms
-- [[Π-Block Polynomial Approximator]] — the multiplicative core that approximates unknown `ℱ`
-- [[Physics-Based Padding for Boundary Conditions]] — encoding Dirichlet/Neumann/Robin via padding instead of loss penalty
+- [[Physics-Based-FD-Convolutional-Layer]] — the frozen-stencil short-cut connection that hard-encodes known PDE terms
+- [[Pi-Block-Polynomial-Approximator]] — the multiplicative core that approximates unknown `ℱ`
+- [[Physics-Based-Padding]] — encoding Dirichlet/Neumann/Robin via padding instead of loss penalty
+- [[Hamiltonian-Neural-Network]] — sibling physics-as-architecture pattern for ODE systems with conservation laws (this paper is the spatial-PDE analogue; HNN is the time-evolution analogue)
 
 ## Open Questions
 

@@ -88,9 +88,9 @@ This is the canonical tool for **hard-encoding spatial differential operators** 
 
 ## Connections
 
-- [[PeRCNN — Physics-Encoded Recurrent CNN]] — original paper that introduced this short-cut connection
-- [[Π-Block Polynomial Approximator]] — the complementary component that learns the *unknown* residual physics
-- [[Physics-Based Padding for Boundary Conditions]] — sister technique for hard-encoding BCs
+- [[PeRCNN]] — original paper that introduced this short-cut connection
+- [[Pi-Block-Polynomial-Approximator]] — the complementary component that learns the *unknown* residual physics
+- [[Physics-Based-Padding]] — sister technique for hard-encoding BCs
 
 ## Open Questions
 

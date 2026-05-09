@@ -90,9 +90,9 @@ The general principle — **encode the constraint geometrically, don't penalize 
 
 ## Connections
 
-- [[PeRCNN — Physics-Encoded Recurrent CNN]] — paper introducing physics-based padding alongside the FD layer and Π-block
-- [[Physics-Based Finite-Difference Convolutional Layer]] — sister technique that hard-encodes interior PDE structure
-- [[Π-Block Polynomial Approximator]] — the learned-residual companion
+- [[PeRCNN]] — paper introducing physics-based padding alongside the FD layer and Π-block
+- [[Physics-Based-FD-Convolutional-Layer]] — sister technique that hard-encodes interior PDE structure
+- [[Pi-Block-Polynomial-Approximator]] — the learned-residual companion
 
 ## Open Questions
 

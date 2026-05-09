@@ -24,7 +24,7 @@ The Π-block sets the function class to "multivariate polynomial" by constructio
 2. **Interpretability.** Trained weights yield an explicit polynomial in `u, ∇u, Δu, …` — extractable by SymPy with no symbolic regression search.
 3. **Scarce-data fit.** Polynomial inductive bias drastically narrows the hypothesis space, making optimization well-posed under noise and limited samples (PeRCNN beats ConvLSTM/ResNet/PDE-Net/DHPM on long-time extrapolation in this regime).
 
-This is `partial` for `hard_constraint_possible` because the polynomial-form prior is a hard *structural* constraint on the function class — but it's not a physics conservation law (energy, momentum). For dissipation/symplecticity you still need [[Port-Hamiltonian Neural Networks]] or similar.
+This is `partial` for `hard_constraint_possible` because the polynomial-form prior is a hard *structural* constraint on the function class — but it's not a physics conservation law (energy, momentum). For dissipation/symplecticity you still need [[Port-Hamiltonian-Neural-Networks]] or similar.
 
 ## The Math
 
@@ -85,14 +85,14 @@ For a real example: PeRCNN's 3D Gray–Scott Π-block extracted the reaction ter
 The Π-block is the candidate **architecture for the CTPC ML corrector** when the corrector's residual is plausibly polynomial in orbital state.
 
 - **"Simple" in SiS.** A polynomial corrector is auditable, sparsifiable, and symbolically expressible. This delivers the `Simple` axiom as a structural property of the model class — not an after-the-fact distillation.
-- **Composable with hard physics.** The Π-block sits *next to* a [[Physics-Based Finite-Difference Convolutional Layer]] (frozen, known terms) — the architecture cleanly separates "what we know" from "what we learn".
+- **Composable with hard physics.** The Π-block sits *next to* a [[Physics-Based-FD-Convolutional-Layer]] (frozen, known terms) — the architecture cleanly separates "what we know" from "what we learn".
 - **Polynomial mismatch with orbital perturbations.** J2 zonal terms involve `(R/r)²` rational functions; atmospheric drag involves `exp(-h/H)`; relativistic corrections involve `1/c²` denominators. None are polynomials in equinoctial elements. Open question whether a low-order Π-block in a transformed frame (e.g., RTN with rescaled state) can absorb these, or whether symbolic activation extensions are required.
 
 ## Connections
 
-- [[PeRCNN — Physics-Encoded Recurrent CNN]] — paper introducing the Π-block
-- [[Physics-Based Finite-Difference Convolutional Layer]] — companion component for known operators
-- [[Physics-Based Padding for Boundary Conditions]] — third leg of PeRCNN's hard-encoding tripod
+- [[PeRCNN]] — paper introducing the Π-block
+- [[Physics-Based-FD-Convolutional-Layer]] — companion component for known operators
+- [[Physics-Based-Padding]] — third leg of PeRCNN's hard-encoding tripod
 
 ## Open Questions
 

@@ -4,3 +4,6 @@
 # Source materials — kept local-only per project policy (see CLAUDE.md → Repository Hygiene)
 raw/
 *.pdf
+
+# Obsidian workspace state (personal — not shared)
+wiki/.obsidian/

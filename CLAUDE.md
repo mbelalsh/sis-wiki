@@ -146,7 +146,8 @@ The `hard_constraint_possible` field tracks whether physics can be baked into ar
 <If only soft: say why hard encoding is intractable here.>
 
 ## Connections
-<Wikilinks to related pages: [[Port-Hamiltonian Systems]], [[SO3 Equivariance]], etc.>
+<Wikilinks to related pages: [[Port-Hamiltonian-Systems]], [[SO3-Equivariance]], etc.
+ Always use hyphenated-filename form — see "Wikilink Convention" below.>
 
 ## Open Questions
 <Unresolved questions Bilal should investigate. Seed for future ingest sessions.>
@@ -154,6 +155,24 @@ The `hard_constraint_possible` field tracks whether physics can be baked into ar
 ## Sources
 <Cite raw/ paths with page numbers where applicable.>
 ```
+
+### Wikilink Convention
+
+**Wikilinks must use the hyphenated-filename form, not the YAML title form.**
+
+- ✅ `[[Pi-Block-Polynomial-Approximator]]`  ← matches the file `wiki/concepts/Pi-Block-Polynomial-Approximator.md`
+- ❌ `[[Π-Block Polynomial Approximator]]`  ← Obsidian creates a 0-byte stub at `wiki/` root
+
+**Why:** Obsidian (the wiki IDE per Karpathy's pattern) by default resolves wikilinks against filenames, not YAML `title` fields. Pages have hyphenated, ASCII-safe filenames (e.g. `Pi-Block-Polynomial-Approximator.md`) but unicode/spaced YAML titles (e.g. `Π-Block Polynomial Approximator`). Title-form wikilinks therefore don't resolve and Obsidian auto-creates empty stubs at the vault root, polluting the wiki.
+
+**How to apply:**
+
+- When writing a wikilink, use the target file's basename without `.md`.
+- Filenames are `Title-Cased-With-Hyphens.md`. ASCII only — replace unicode like `Π` with `Pi`, `α` with `alpha`, etc., in filenames; keep unicode in titles and prose.
+- For paper pages, prefer short basenames (e.g. `HNN.md`, `PeRCNN.md`) over verbose ones — wikilinks become readable.
+- If a target page doesn't exist yet (forward reference), still use the hyphenated form. The link stays "broken" until the page is created — that's the right TODO marker.
+
+If you find a title-form wikilink in any wiki page (e.g. left over from older ingests), convert it as part of the next ingest touch on that file.
 
 ---
 
