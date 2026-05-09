@@ -133,6 +133,18 @@ For CTPC specifically:
 - [[PeRCNN]] — physics-as-architecture sibling for spatial PDEs (LGN here is the Lagrangian PDE analogue)
 - [[Pi-Block-Polynomial-Approximator]] — Cranmer thread: LNN is Cranmer-authored *structured-prior* example; the *eureqa*-based init scheme here is a meta-application of his symbolic regression toolkit
 
+## Empirical Counterpoint (PhyArch DP Benchmark, 2026-05)
+
+The [[PhyArch-Double-Pendulum-Benchmark]] (Bilal's own work) tested LNN head-to-head against PINN and a symmetry-hardwired PhyArch (PaA) model on the planar double pendulum. Results push back on the standard "LNN guarantees energy conservation" narrative:
+
+- **LNN failure rate: 9.4% / 25% / 43.8%** on ID / OOD-Energy / OOD-Upright. Highest of the three models on every split.
+- **LNN reflection error: 19.43**, the *worst* of the three (PaA: 0.0 exact; PINN: 0.42). Lagrangian formalism enforces *energy* structure but says nothing about *spatial* symmetries; the softplus MLP has no reason to be parity-equivariant — and isn't.
+- **Energy drift @ 20s OOD Upright: 41.3 J for LNN vs 28.2 J for PaA.** PhyArch conserves energy *better* than LNN despite not modeling energy explicitly.
+
+The mechanism (Sec. 10.2 of the PhyArch source): LNN's "guarantee" is contingent on (1) having the *exact* Lagrangian — but LNN learns `L̂ ≈ L` and the Euler-Lagrange equation applied to `L̂` conserves a Hamiltonian *of the learned system*, slightly different from true `E = T + V`; and (2) using a symplectic integrator — but RK4 isn't, so even the learned Hamiltonian drifts cumulatively.
+
+**Both conditions fail in practice.** LNN's structural guarantee is therefore formalism-level, not all-physics-level. This benchmark validates the distinction empirically.
+
 ## Open Questions
 
 - **Computational cost at SDA scale.** `O(d³)` Hessian inversion at every step. For `d ~ 6` (orbital state) free; for `d ~ 100+` (N-body), infeasible without graph sparsity. Whether this is a hard blocker for production CTPC depends on the actual `d`.

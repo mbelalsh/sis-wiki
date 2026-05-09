@@ -84,8 +84,9 @@ wiki-sis/
 │   │   ├── port-hamiltonian/
 │   │   ├── interpretability/      ← HNN, LNN, GP, mech-interp, ML-for-orbits
 │   │   ├── formal-verification/   ← proof assistants, NN robustness verification
+│   │   ├── my-papers/             ← Bilal's own published/submitted papers (CTPC, etc.)
 │   │   └── sda/
-│   └── notes/
+│   └── notes/                     ← informal notes, drafts, benchmark docs (e.g., PhyArch DP)
 ├── wiki/
 │   ├── index.md               ← master index (auto-updated on every ingest)
 │   ├── log.md                 ← append-only operation log

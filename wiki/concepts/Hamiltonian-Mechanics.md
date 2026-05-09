@@ -94,6 +94,7 @@ Hamiltonian mechanics is the **structural foundation** for SiS architectures tar
 - [[Lagrangian-Mechanics]] — Legendre-dual formulation; `L(q, q̇) = pq̇ − H(q,p)`
 - [[Hamiltonian-vs-Lagrangian-Duality]] — design-decision synthesis: when to use which formulation for CTPC
 - [[Port-Hamiltonian-Systems]] *(not yet ingested)* — dissipative extension `dx/dt = (J − R)∇H + Bu`
+- [[CTPC-KDD-Submission]] — operational example: GMAT is a real-world Hamiltonian propagator (orbital mechanics is Hamiltonian + small dissipative perturbations); CTPC's Predictor-Corrector decomposition matches the Hamiltonian-core + dissipative-residual structural decomposition
 
 ## Open Questions
 

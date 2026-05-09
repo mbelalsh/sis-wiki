@@ -95,6 +95,19 @@ See [[Hamiltonian-vs-Lagrangian-Duality]] for the full HNN-vs-LNN-for-CTPC decis
 - [[Hamiltonian-Neural-Network]] — Hamiltonian counterpart
 - [[Port-Hamiltonian-Neural-Networks]] *(not yet ingested)* — dissipative extension on the Hamiltonian side; Lagrangian counterpart uses Rayleigh dissipation
 - [[PeRCNN]] — physics-as-architecture sibling for spatial PDEs
+- [[PhyArch]] — orthogonal physics-as-architecture sibling: hardwires *spatial symmetries* (parity, periodicity) instead of energy formalism. The two are complementary, not competing.
+
+## Caveat: formalism-level vs all-physics constraint
+
+LNN's structural guarantee is **formalism-level**: any output is guaranteed to come from *some* Lagrangian, so dynamics are automatically conservative *for that learned Lagrangian*. This is not the same as "all physics is enforced." Specifically:
+
+- **Energy structure: enforced** (modulo `L̂ ≈ L` approximation + non-symplectic integration).
+- **Spatial symmetries (periodicity, reflection, rotation): NOT enforced.** LNN's MLP can produce parity-violating Lagrangians as easily as parity-respecting ones.
+
+The [[PhyArch-Double-Pendulum-Benchmark]] (Bilal's own work) confirms this empirically — LNN's reflection error is 19.43, *worst* of three models. For systems where spatial symmetries matter as much as energy conservation, LNN alone is insufficient. Composition options:
+
+- **PhyArch + Lagrangian formalism.** Apply parity-split features inside an LNN's scalar Lagrangian net so `L_θ` itself is parity-respecting. Result: both formalism + symmetry hardwired. Untested but architecturally clean.
+- **Pure PhyArch** (no Lagrangian formalism). Acceleration directly from invariant-coefficient × equivariant-basis assembly. Loses the energy-conservation formalism but the empirical PhyArch DP result suggests this isn't actually a loss — symmetry compliance protects energy *more effectively* than the Lagrangian formalism does in practice.
 
 ## Open Questions
 

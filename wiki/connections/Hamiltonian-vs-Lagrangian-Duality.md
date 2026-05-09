@@ -74,6 +74,27 @@ For non-degenerate Lagrangians (invertible velocity-Hessian `∇_q̇ ∇_q̇^T L
 - **Dissipative residual:** PHNN (or Rayleigh-dissipation Lagrangian extension once that's ingested).
 - **Hard physics layer:** SGP4 (frozen, like a [[Physics-Based-FD-Convolutional-Layer]] but for orbital ODEs).
 
+## A Third Axis: PhyArch (Symmetry-Based Hard Constraints)
+
+The HNN ↔ LNN axis above is about **which formalism** to hardwire (Hamiltonian vs Lagrangian). Both axes encode an *energy* structural prior. **[[PhyArch]] occupies an orthogonal axis**: instead of formalism, it hardwires the system's *spatial symmetries* and *equation form* directly into the architecture.
+
+Empirical finding from [[PhyArch-Double-Pendulum-Benchmark]] (Bilal's own work, 2026-05): on the planar double pendulum, PhyArch conserves energy **better than LNN** at 20s rollouts (28.2 J vs 41.3 J on OOD Upright) *despite not modeling energy at all*. Mechanism: hard symmetry constraints keep the trajectory close to the true one, and the true trajectory conserves energy as a consequence.
+
+This implies the design space is at least 2-dimensional, not 1-dimensional:
+
+| | **Symmetry-based hard constraint** | **No symmetry hardwiring** |
+|---|---|---|
+| **Hamiltonian formalism** | PhyArch + HNN (untested composition) | HNN |
+| **Lagrangian formalism** | PhyArch + LNN (untested composition) | LNN |
+| **No formalism (direct)** | PhyArch | PINN / vanilla MLP |
+
+**For CTPC's design decision, the question is now 2-fold:**
+
+1. Does the conservative-core corrector need a *formalism* prior (HNN/LNN-style) or a *symmetry* prior (PhyArch-style) — or both?
+2. If both, in what composition? PhyArch's invariant features feeding an LNN's scalar `L_θ` is one candidate; PhyArch directly outputting the manipulator-equation skeleton with neural coefficients (no Lagrangian formalism) is another.
+
+The PhyArch DP benchmark suggests symmetry alone may be sufficient when the symmetry group is correctly identified — but DP has *exact* `Z₂`. Orbital has *broken* `SO(3) → SO(2)`. The composition question is open.
+
 ## What Each Formulation Hides
 
 **HNN hides the kinetic energy structure.** `H = T(p) + V(q)` for separable mechanical systems, but `T` is a function of momentum, not velocity. For relativistic systems where `p ≠ m q̇`, defining `T(p)` requires inverting the Legendre transform — exactly the step LNN avoids.

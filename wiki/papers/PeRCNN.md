@@ -104,6 +104,8 @@ PeRCNN does **not** enforce dissipation `Ḣ ≤ 0` — that's an energy/Lyapuno
 - [[Pi-Block-Polynomial-Approximator]] — the multiplicative core that approximates unknown `ℱ`
 - [[Physics-Based-Padding]] — encoding Dirichlet/Neumann/Robin via padding instead of loss penalty
 - [[Hamiltonian-Neural-Network]] — sibling physics-as-architecture pattern for ODE systems with conservation laws (this paper is the spatial-PDE analogue; HNN is the time-evolution analogue)
+- [[PhyArch]] — sibling physics-as-architecture pattern for symmetry-constrained ODEs (parity split + manipulator-equation skeleton). PeRCNN does it for PDEs via frozen FD conv + Π-block + BC padding; PhyArch does it for ODEs via geometric features + parity assembly. Different operationalizations of the same SiS principle.
+- [[CTPC-KDD-Submission]] — sibling Predictor-Corrector decomposition for orbital ODEs. PeRCNN: frozen FD conv (hard physics) + Π-block (learned residual) for spatial PDE evolution. CTPC: GMAT predictor (hard physics) + Latent NCDE corrector (learned probabilistic residual) for orbital trajectory forecasting. Same architectural pattern, different domain.
 
 ## Open Questions
 
