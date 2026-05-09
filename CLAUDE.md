@@ -49,6 +49,8 @@ wiki-sis/
 │   │   ├── neural-odes/
 │   │   ├── geometric-dl/
 │   │   ├── port-hamiltonian/
+│   │   ├── interpretability/      ← HNN, LNN, GP, mech-interp, ML-for-orbits
+│   │   ├── formal-verification/   ← proof assistants, NN robustness verification
 │   │   └── sda/
 │   └── notes/
 ├── wiki/
@@ -310,6 +312,34 @@ Last updated: YYYY-MM-DD | Total pages: N
 - Never leave `hard_constraint_possible` as `unknown` without flagging it for Bilal
 - Never produce a page without the YAML frontmatter block
 - Never batch-ingest without Bilal's explicit instruction
+
+---
+
+## Repository Hygiene — Pre-Push Reminder Protocol
+
+Before suggesting or executing `git push`, scan staged + untracked files for repository
+bloat. Watch for:
+
+- PDFs, ebooks, papers (typical `raw/` source materials)
+- Model weights, checkpoints (`.pt`, `.pth`, `.ckpt`, `.onnx`, `.safetensors`, `.gguf`)
+- Datasets (large CSVs, parquet, HDF5, `.pkl`, `.npz`)
+- Images > ~500 KB, video, audio
+- Compiled binaries, archives (`.zip`, `.tar.gz`, build artifacts)
+
+**STOP before pushing if any are present.** Then:
+
+1. List the offending files with rough sizes
+2. For each, recommend ONE of:
+   - **`.gitignore`** (default) — file stays local-only
+   - **Git LFS** — only if Bilal needs it tracked across machines AND it's too big for plain git
+3. Wait for Bilal's decision before proceeding
+
+**Default preference: `.gitignore` over Git LFS.** Bilal prefers keeping large source
+materials local-only rather than taking on LFS dependency. Only suggest LFS when there's
+a clear cross-machine sync need that local-only can't satisfy.
+
+Apply this whenever you'd otherwise auto-stage, auto-commit, or push files of those
+types — never silently include them in a push.
 
 ---
 
