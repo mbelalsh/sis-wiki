@@ -33,6 +33,39 @@ The CTPC framework (Continuous-Time Probabilistic Corrector):
 
 ---
 
+## Foundational Reference
+
+`llm-wiki_Karpathy_instructions.md` (repo root) is Andrej Karpathy's high-level
+pattern for LLM-maintained personal knowledge bases — the philosophical "north
+star" that this CLAUDE.md is a concrete instantiation of. It describes the
+abstract idea: a three-layer architecture (raw sources / wiki / schema),
+ingest+query+lint operations, parseable index and log files, with the LLM
+owning maintenance and the human owning curation and questions.
+
+**When to consult it:**
+
+- Extending or revising the schema (this CLAUDE.md) — the Karpathy doc is the
+  philosophical source for what the schema should optimize for
+- Bilal asks a meta-question about how the wiki should work, or what to do in
+  a situation not covered by this CLAUDE.md
+- A new workflow needs to be invented (e.g. ingesting non-paper sources like
+  podcasts, lectures, code repos)
+- Tension between concrete CLAUDE.md rules and underlying intent — the
+  Karpathy doc is the tiebreaker
+
+**Authority order:** CLAUDE.md (this file) > Karpathy doc > general instinct.
+CLAUDE.md is the load-bearing operational schema for *this* wiki; the Karpathy
+doc is intentionally abstract and applies to LLM-wikis in general. When they
+agree, follow CLAUDE.md. When CLAUDE.md is silent or ambiguous, fall back to
+the Karpathy pattern. When CLAUDE.md actively contradicts the Karpathy doc, do
+what CLAUDE.md says — but flag the contradiction to Bilal so we can decide
+whether CLAUDE.md needs updating.
+
+Do **not** treat the Karpathy doc as a raw source for ingest. It's a meta-doc
+about the wiki itself, not domain content.
+
+---
+
 ## Wiki Directory Structure
 
 ```
