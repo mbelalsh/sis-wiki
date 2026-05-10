@@ -181,8 +181,10 @@ This is the difference between "*the model thinks drag is large here*" (post-hoc
 CBM-CTPC closes the **Year 1 milestone** of the two-year research arc in [[CTPC-Design-Rationale]] Part III:
 
 - **Year 1 (this design):** CBM corrector layer — verifies concept-closure invariance, transitions Barbiero symmetry from "asserted" to "verified"
-- **Year 2:** Analytic covariance propagation — extends information invariance from mean prediction to full predictive distribution
+- **Year 2:** [[Analytic-Sigma-CTPC-Composition]] — replaces K-sample MC with analytic moment propagation, enables TLE input uncertainty, verifies information invariance on the full predictive distribution via frame-equivariance test. Year 2 design now exists as concrete plan (created 2026-05-09).
 - **End-state:** All four Barbiero symmetries verified + formal verification (links to Q5 of Part II)
+
+**Year 1 → Year 2 dependency.** Year 2 analytic propagation extends Year 1 CBM with full-distribution invariance: the variance from the concept bottleneck propagates through the prediction head analytically; intervention experiments (Year 1) and frame-equivariance tests (Year 2) compose. The combined verification — intervening on `ĉ_drag` AND changing reference frame should commute up to machine precision — is Test 5 in [[Analytic-Sigma-CTPC-Composition]] § verification protocol.
 
 The composition is *additive* with respect to existing [[PhyArch]] hardwiring:
 - PhyArch hardwires inference equivariance + structural invariance (parity-split coefficient assembly)

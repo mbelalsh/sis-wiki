@@ -1,7 +1,7 @@
 ---
 title: CTPC Design Rationale (Decisions Made + Decisions Deferred to PhyArch-CTPC)
 tags: [ctpc, sis-design, design-rationale, phyarch, synthesis, research-roadmap, afrl, actionable-interpretability, barbiero-symmetries]
-sources: [raw/papers/my-papers/KDD_submission.pdf, raw/notes/PhyArch_DoublePendulum.pdf, raw/papers/interpretability/Interpretability&Symmetry.pdf, raw/papers/interpretability/ConceptBottleneckModels.pdf]
+sources: [raw/papers/my-papers/KDD_submission.pdf, raw/notes/PhyArch_DoublePendulum.pdf, raw/papers/interpretability/Interpretability&Symmetry.pdf, raw/papers/interpretability/ConceptBottleneckModels.pdf, raw/papers/uncertainty-propagation/AnalyticUncertaintyProp.pdf]
 created: 2026-05-09
 updated: 2026-05-09
 sis_relevance: critical
@@ -17,6 +17,7 @@ hard_constraint_possible: yes
 > - [[PhyArch-Double-Pendulum-Benchmark]] — deterministic symmetry-hardwiring benchmark on a controlled toy system
 > - Barbiero et al. 2026, *Interpretability & Symmetry* (`raw/papers/interpretability/Interpretability&Symmetry.pdf`) — *not yet ingested as a separate page; framework summarized in Part III below*
 > - [[Concept-Bottleneck-Models]] (Koh et al. ICML 2020) — the mechanism for verifying concept-closure invariance, applied via [[CBM-CTPC-Composition]] (Year 1 milestone). Ingested 2026-05-09.
+> - [[Analytic-Covariance-Propagation]] (Wright et al. AISTATS 2024) — the technical machinery for verifying information invariance on the full predictive distribution, applied via [[Analytic-Sigma-CTPC-Composition]] (Year 2 milestone). Ingested 2026-05-09.
 
 ## Core Design Philosophy
 
@@ -286,7 +287,7 @@ The interpretability literature has recently converged around four symmetries th
 | Barbiero symmetry | Definition (paraphrased) | PhyArch / CTPC instantiation |
 |---|---|---|
 | **Inference equivariance** | Predictions transform correctly under group actions on inputs | [[PhyArch]] parity-split assembly: `(invariant coefficient) × (equivariant basis) = equivariant output`. For DP: exact `Z₂` reflection. For orbital: `SO(2)` rotation around Earth's pole (J2-broken from `SO(3)`). Algebraically enforced — no choice of weights produces an inequivariant function. |
-| **Information invariance** | Same prediction under redundant / equivalent input encodings | **Mean prediction**: covered. Geometric features `(uᵢ, tᵢ, ĝ)` invariant to angle-chart choice; RTN frame invariant to ECI-frame inertial orientation; [[Neural-Controlled-Differential-Equation]] control path invariant to sampling-time scheme (within spline regime). **Full predictive distribution**: NOT YET — covariance head is free-form Cholesky and may not transform correctly. Closing this gap requires analytic covariance propagation (Year 2). |
+| **Information invariance** | Same prediction under redundant / equivalent input encodings | **Mean prediction**: covered. Geometric features `(uᵢ, tᵢ, ĝ)` invariant to angle-chart choice; RTN frame invariant to ECI-frame inertial orientation; [[Neural-Controlled-Differential-Equation]] control path invariant to sampling-time scheme (within spline regime). **Full predictive distribution**: concrete verification plan exists ([[Analytic-Sigma-CTPC-Composition]]) — replace K-sample MC with [[Analytic-Covariance-Propagation|Wright's analytic moment propagation]], plus enable propagation of TLE input uncertainty. Frame equivariance `Σ_t^ECI = R^T · Σ_t^RTN · R` to machine precision is the empirical test for information invariance on the full distribution. **Promoted from "partial (mean only)" to "Year 2 milestone with verifiable plan" (2026-05-09 update).** |
 | **Concept-closure invariance** | Operating on internal concepts produces predictions that respect those concept manipulations (intervention compositionality) | **Asserted architecturally; concrete verification plan exists.** PhyArch's coefficient networks `aᵢⱼ(z_even)` correspond *by construction* to manipulator-equation entries `M⁻¹C, M⁻¹G`. The mechanism for empirical verification is the [[CBM-CTPC-Composition]] design: insert a [[Concept-Bottleneck-Models|CBM]] layer with named orbital-physics concepts (J2, drag, SRP, third-body, RTN components) between the Latent NCDE decoder and prediction head, with a four-test verification protocol (concept accuracy, intervention accuracy, composability, sanity). **Promoted from "weakest link, asserted only" to "Year 1 milestone with verifiable plan" (2026-05-09 update).** |
 | **Structural invariance** | Architecture mirrors the system's structural form | **PhyArch**: assembly mirrors `q̈ = −M⁻¹(Cq̇ + G)` — the algebraic skeleton of the physics equation. **CTPC**: Predictor-Corrector decomposition mirrors the physics-prior + learned-residual structural decomposition at the system level. Hardwired in architecture, not loss. |
 
@@ -298,9 +299,9 @@ The interpretability literature has recently converged around four symmetries th
 | Rudin sparse models (GAMs, decision lists) | ✗ | partial | ✗ | partial |
 | Equivariant NNs (EGNN, Tensor Field Networks) | ✓ | partial | ✗ | ✗ |
 | Concept Bottleneck Models | ✗ | ✗ | ✓ | ✗ |
-| **PhyArch + CTPC (now, 2026-05)** | **✓** | partial (mean only) | ⚠️ asserted (concrete verification plan: [[CBM-CTPC-Composition]]) | **✓** |
+| **PhyArch + CTPC (now, 2026-05)** | **✓** | partial (mean only); concrete verification plan: [[Analytic-Sigma-CTPC-Composition]] | ⚠️ asserted (concrete verification plan: [[CBM-CTPC-Composition]]) | **✓** |
 | **CBM-CTPC (Year 1, post-verification)** | **✓** | partial (mean only) | **✓** verified | **✓** |
-| **PhyArch + CTPC + CBM + analytic Σ (Year 2 end-state)** | **✓** | **✓** | **✓** | **✓** |
+| **CBM + Analytic-Σ-CTPC (Year 2 end-state)** | **✓** | **✓** verified | **✓** | **✓** |
 
 - **SHAP / LIME** are post-hoc and model-agnostic. The model itself remains a black box; the explanation is *fit* to the model, not *derived from its structure*. None of the four symmetries are enforced — they are at best approximated by the explanation method.
 - **Rudin sparse models** [Rudin 2019] enforce structural simplicity (sparsity, additivity, decision-rule form). Information invariance is partial — sparse models are often coordinate-fragile. Group equivariance and concept closure are not addressed by the framework.
@@ -349,7 +350,8 @@ The asterisk lifts entirely once Year 1 implementation runs the verification pro
 | **Now (2026-05)** | PhyArch DP benchmark + CTPC KDD submission | ✓ Done | Inference equivariance + structural invariance; mean-level information invariance; *asserted* concept closure |
 | **Now (2026-05-09)** | CBM-CTPC composition design ([[CBM-CTPC-Composition]]) — architecture, 9-concept set, independent training scheme, four-test verification protocol | ✓ Designed (implementation pending) | Concept-closure invariance: from *asserted* to *concrete verifiable plan* |
 | **Year 1** | Implement CBM-CTPC; run verification protocol; report intervention-success rates + concept-alignment metrics | Open | Concept-closure invariance: from *concrete plan* to *empirically verified* |
-| **Year 2** | [[Analytic-Covariance-Propagation]] through PhyArch architecture | Open | Information invariance extended from mean prediction to full predictive distribution (covariance respects group actions) |
+| **Now (2026-05-09)** | Analytic-Σ-CTPC composition design ([[Analytic-Sigma-CTPC-Composition]]) — replace K-sample MC with [[Analytic-Covariance-Propagation\|Wright et al. 2024]] analytic moment propagation, enable TLE uncertainty propagation, frame-equivariance verification protocol | ✓ Designed (implementation pending) | Information invariance: from *partial (mean only)* to *concrete verifiable plan* |
+| **Year 2** | Implement Analytic-Σ-CTPC; run frame-equivariance test (`Σ_t^ECI = R^T Σ_t^RTN R` to machine precision); derive analytic-Σ-NCDE theorem (potential standalone publication) | Open | Information invariance: from *concrete plan* to *empirically verified for full distribution* |
 | **End-state** | Full Barbiero et al. 2026 compliance + formal verification | Aspirational | All four symmetries empirically verified + formally proven (links to Part II Q5) |
 
 **Sequencing rationale:**
@@ -370,7 +372,8 @@ This is the AFRL-deployable form. The current 2026-05 state is the architectural
 
 - [[Concept-Bottleneck-Models]] — the architectural pattern (Koh et al. ICML 2020) being applied to verify concept-closure invariance. **Now ingested.**
 - [[CBM-CTPC-Composition]] — concrete Year 1 milestone design: how to insert a CBM into the Latent NCDE Corrector with named orbital-physics concepts (J2, drag, SRP, third-body, RTN). **Created 2026-05-09.**
-- [[Analytic-Covariance-Propagation]] *(not yet ingested)* — the analytical machinery for extending information invariance from mean to full distribution (Year 2 milestone)
+- [[Analytic-Covariance-Propagation]] — Wright et al. AISTATS 2024 paper providing the technical machinery for analytic moment propagation through neural networks. **Now ingested.**
+- [[Analytic-Sigma-CTPC-Composition]] — concrete Year 2 milestone design: replace K-sample MC with analytic propagation, enable TLE uncertainty source, frame-equivariance verification protocol for information invariance on the full predictive distribution. **Created 2026-05-09.**
 - [[Physics-Based-FD-Convolutional-Layer]] — the discrete analog of "freeze what's known structurally" for spatial PDEs; PhyArch's parity-split assembly is the symmetry-respecting analog for ODEs (both encode structural invariance, the fourth Barbiero symmetry, into the architecture rather than the loss)
 - `raw/papers/interpretability/Interpretability&Symmetry.pdf` — Barbiero et al. 2026, the framework being instantiated. **Not yet ingested as a wiki page** — flagged as the canonical source for the four symmetries; full treatment of their definitions, examples, and counter-examples deferred until ingest.
 
@@ -398,7 +401,8 @@ This is the AFRL-deployable form. The current 2026-05 state is the architectural
 - [[Port-Hamiltonian-Neural-Networks]] *(not yet ingested)* — needed to close Q8 (HNN/LNN/PHNN integration)
 - [[Concept-Bottleneck-Models]] — Koh et al. ICML 2020; mechanism for verifying concept-closure invariance (Part III). Ingested 2026-05-09.
 - [[CBM-CTPC-Composition]] — concrete Year 1 milestone design applying CBM to the Latent NCDE Corrector with orbital-physics concepts. Created 2026-05-09.
-- [[Analytic-Covariance-Propagation]] *(not yet ingested)* — needed to extend information invariance to the full predictive distribution (Year 2 milestone)
+- [[Analytic-Covariance-Propagation]] — Wright et al. AISTATS 2024; technical machinery for full-distribution information invariance. Ingested 2026-05-09.
+- [[Analytic-Sigma-CTPC-Composition]] — concrete Year 2 milestone design replacing K-sample MC with analytic propagation, enabling TLE uncertainty and frame-equivariance verification. Created 2026-05-09.
 
 ## Sources
 
@@ -406,4 +410,5 @@ This is the AFRL-deployable form. The current 2026-05 state is the architectural
 - `raw/notes/PhyArch_DoublePendulum.pdf` — Bilal's deterministic benchmark notes. Validates symmetry-hardwiring on a controlled toy. Used in Parts I–III.
 - `raw/papers/interpretability/Interpretability&Symmetry.pdf` — Barbiero et al. 2026, the four-symmetry framework for actionable interpretability. **Not yet ingested as a separate wiki page**; framework summarized in Part III from Bilal's reading. Promote to canonical source treatment on next ingest.
 - `raw/papers/interpretability/ConceptBottleneckModels.pdf` — Koh et al. ICML 2020. The mechanism for empirically verifying concept-closure invariance. Ingested 2026-05-09; see [[Concept-Bottleneck-Models]] and [[CBM-CTPC-Composition]] for the full treatment.
+- `raw/papers/uncertainty-propagation/AnalyticUncertaintyProp.pdf` — Wright et al. AISTATS 2024. The technical machinery for analytic moment propagation through neural networks; underpins the Year 2 milestone for verifying information invariance on the full predictive distribution. Ingested 2026-05-09; see [[Analytic-Covariance-Propagation]] and [[Analytic-Sigma-CTPC-Composition]] for the full treatment.
 - `CLAUDE.md` § Core Philosophy — the SiS design hierarchy that this page operationalizes.
