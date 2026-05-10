@@ -202,7 +202,7 @@ The composition with [[CBM-CTPC-Composition]] (Year 1, concept-closure invarianc
 - [[Latent-NCDE-Corrector]] — the architecture into which analytic propagation gets composed
 - [[CTPC-KDD-Submission]] — the deployed framework whose K-sample inference algorithm gets replaced by analytic propagation
 - [[Concept-Bottleneck-Models]] — Year 1 sibling: concept-closure verification mechanism. Year 1 + Year 2 compose to close the remaining Barbiero gaps.
-- [[Hamiltonian-vs-Lagrangian-Duality|Barbiero symmetries]] — the four-symmetry framework being instantiated; this paper provides the technical means for one of them
+- [[Actionable-Interpretability-Symmetries]] — Barbiero et al. 2026 four-symmetry framework being instantiated by SiS. **Reframing note (2026-05-10):** this paper's analytic propagation was originally framed as closing Barbiero's *information invariance* on the full distribution; after canonical Barbiero ingest, the corrected reading is that it refines *inference equivariance* from mean to full distribution — information invariance is closed by the CBM bottleneck (Year 1), not by analytic Σ propagation (Year 2). See [[CTPC-Design-Rationale]] § Corrections from Barbiero Ingest.
 - [[Neural-Controlled-Differential-Equation]] — NCDEs are the substrate; Wright's propagation needs to be extended for RK4-integrated NCDEs (open question, see [[Analytic-Sigma-CTPC-Composition]])
 
 ## Open Questions

@@ -16,9 +16,20 @@ hard_constraint_possible: yes
 
 Insert a `k=9` concept bottleneck between the Latent NCDE decoder hidden state and the Student-t prediction head, where each concept corresponds to a named orbital perturbation (J2, drag, SRP, third-body) or a frame-decomposition component (RTN). The bottleneck forces the corrector's residual prediction to flow *through* named physics concepts, making counterfactual queries like "what if drag were zero?" or "what if J2 were 30% larger?" well-defined operations on the model — enabling the AFRL-relevant operational use case that motivates this entire research thread.
 
+## Key Architectural Insight — One Mechanism, Two Barbiero Symmetries
+
+> **CBM-CTPC achieves two of the four [[Actionable-Interpretability-Symmetries|Barbiero]] symmetries with one architectural mechanism: the concept bottleneck.**
+>
+> The k=9 named-concept bottleneck simultaneously:
+>
+> 1. **Closes concept-closure invariance** (Barbiero Symmetry 3) — the model uses concepts from the user's vocabulary; sound translations like `drag ↔ atmospheric_dissipation` preserve the underlying physical mechanism. Paper §2.3.1 explicitly cites CBMs as the mechanism.
+> 2. **Closes information invariance** (Barbiero Symmetry 2) — the bottleneck IS the compressed sufficient statistic Z required by the symmetry definition, with `H(Z) ≪ H(X)` (k=9 concepts vs. full hidden state) and `I(Y;X|ĉ) ≈ 0` (verified by Test 1 of the verification protocol below).
+>
+> This is the most efficient point in the architectural design space — one structural commitment, two symmetry guarantees. The original Part III framing of [[CTPC-Design-Rationale]] (pre-2026-05-10) incorrectly attributed information invariance to analytic Σ propagation (Year 2). After the Barbiero canonical ingest, the corrected reading is: **CBM-CTPC closes information invariance in Year 1; analytic Σ propagation refines inference equivariance to the full distribution in Year 2.**
+
 ## Why This Was Done
 
-[[CTPC-Design-Rationale]] Part III identifies four [[Hamiltonian-vs-Lagrangian-Duality|Barbiero]] symmetries for actionable interpretability. PhyArch + CTPC currently satisfies three; **concept-closure invariance is the weakest link**: asserted architecturally (coefficient networks correspond to manipulator-equation entries by construction) but never empirically verified.
+[[CTPC-Design-Rationale]] Part III identifies four [[Actionable-Interpretability-Symmetries|Barbiero]] symmetries for actionable interpretability. **Reframed 2026-05-10** after canonical Barbiero ingest: PhyArch + CTPC currently satisfies inference equivariance (for the mean) and structural invariance (for orbital-mechanics-trained users) — but lacks both **concept-closure invariance** and **information invariance**, because PhyArch alone has no compressed bottleneck with named-concept semantics.
 
 CBM is the architectural mechanism for *making this property verifiable*. The standard CBM result (Koh et al. 2020): inserting a concept bottleneck `f ∘ g` where `f` takes only `ĉ` as input means concept interventions are guaranteed to propagate through `f` to the prediction. The composition with CTPC inherits this guarantee for orbital residual modeling.
 
@@ -119,6 +130,29 @@ Both networks separately. At test time: `(μ_t, L_t) = f*(g*(z_d(t)))`.
 
 The encoder NCDE + latent posterior + decoder NCDE training stays as in [[CTPC-KDD-Submission]] — only the bottleneck is added between `z_d(t)` and the prediction head.
 
+## Open Design Decisions
+
+### Prediction Head Structural Commitment
+
+[[Actionable-Interpretability-Symmetries|Barbiero §2.4.1]] explicitly disqualifies CBMs with free-form MLP task predictors: *"concept-based models whose mappings between concepts and tasks (or between concepts themselves) are arbitrary, such as employing DNNs, have a hypothesis space that lacks any well-defined structure and therefore do not satisfy this [structural invariance] symmetry."*
+
+**Implication for CBM-CTPC:** the prediction head `f: ĉ → ŷ` cannot be a free-form MLP if structural invariance is to hold. An explicit structural commitment is required.
+
+**Three candidate forms** (the choice depends on what mental model the AFRL operator user actually reasons in — open question; needs domain-expert input):
+
+| Head form | Description | Pros | Cons |
+|---|---|---|---|
+| **Linear** | `μ_t = W ĉ(t) + b`, with `Σ_t` head structurally simple (e.g., diagonal Cholesky times scale) | Maximally interpretable; user can read off coefficients | Likely too constrained — orbital-residual dynamics are nonlinear in concept values |
+| **Monotonic** | `μ_t = m(ĉ(t))` with `m` monotonic in each concept (e.g., monotonic neural network, isotonic regression head) | Captures nonlinearities; intervention semantics remain meaningful (increasing drag should increase residual magnitude predictably) | Off-the-shelf monotonic networks often have lower expressiveness; might trade accuracy |
+| **Manipulator-skeleton** | `μ_t = Σⱼ aⱼ(ĉ_invariant) × ĉ_basis_j` where `ĉ_invariant` are scalar-invariant concepts and `ĉ_basis` are RTN-typed concepts | Structurally aligned with PhyArch's manipulator-equation form; matches orbital-mechanics-trained user's mental model | Requires concept set partitioned into invariant + basis; tighter coupling to PhyArch |
+
+**Decision deferred to Year 1 implementation.** The right choice depends on:
+- The empirical performance trade-off (linear may be too constrained; monotonic and manipulator-skeleton may be expressive enough)
+- The target user's actual mental model (what does an AFRL operator reason in — linear coefficients, monotonic effects, or manipulator-form coupling?)
+- The verification protocol's pass/fail thresholds when each head is tried
+
+**Flag for Year 1 work:** include all three head forms as ablation conditions in the verification protocol. The structurally-committed head choice is a load-bearing contribution to satisfying Barbiero's Symmetry 4 — not a free hyperparameter.
+
 ## Verification Protocol — How Concept Closure Becomes Empirically Verified
 
 This is the protocol that promotes concept-closure invariance from **asserted** to **verified** in [[CTPC-Design-Rationale]] Part III.
@@ -178,13 +212,13 @@ This is the difference between "*the model thinks drag is large here*" (post-hoc
 
 ## Connection to SiS / CTPC
 
-CBM-CTPC closes the **Year 1 milestone** of the two-year research arc in [[CTPC-Design-Rationale]] Part III:
+CBM-CTPC closes the **Year 1 milestone** of the two-year research arc in [[CTPC-Design-Rationale]] Part III. As elevated in the *Key Architectural Insight* section above, **the bottleneck closes TWO Barbiero symmetries simultaneously** (concept-closure + information invariance), making Year 1 disproportionately high-leverage.
 
-- **Year 1 (this design):** CBM corrector layer — verifies concept-closure invariance, transitions Barbiero symmetry from "asserted" to "verified"
-- **Year 2:** [[Analytic-Sigma-CTPC-Composition]] — replaces K-sample MC with analytic moment propagation, enables TLE input uncertainty, verifies information invariance on the full predictive distribution via frame-equivariance test. Year 2 design now exists as concrete plan (created 2026-05-09).
-- **End-state:** All four Barbiero symmetries verified + formal verification (links to Q5 of Part II)
+- **Year 1 (this design):** CBM corrector layer — closes concept-closure AND information invariance in one mechanism. **Plus:** decide structural commitment of prediction head (see Open Design Decisions above) — required for structural invariance per [[Actionable-Interpretability-Symmetries|Barbiero §2.4.1]] disqualification of free-form MLP heads.
+- **Year 2:** [[Analytic-Sigma-CTPC-Composition]] — replaces K-sample MC with analytic moment propagation; **refines inference equivariance from "mean exact" to "full distribution exact" under input transformations**. (Originally framed as closing information invariance per Barbiero — corrected 2026-05-10; analytic Σ propagation does NOT close information invariance, which is Year 1's job. See [[CTPC-Design-Rationale]] § Corrections from Barbiero Ingest for the audit trail.)
+- **End-state:** All four Barbiero symmetries empirically verified for orbital-mechanics-trained user + formal verification (links to Q5 of Part II)
 
-**Year 1 → Year 2 dependency.** Year 2 analytic propagation extends Year 1 CBM with full-distribution invariance: the variance from the concept bottleneck propagates through the prediction head analytically; intervention experiments (Year 1) and frame-equivariance tests (Year 2) compose. The combined verification — intervening on `ĉ_drag` AND changing reference frame should commute up to machine precision — is Test 5 in [[Analytic-Sigma-CTPC-Composition]] § verification protocol.
+**Year 1 → Year 2 dependency.** Year 2 analytic propagation extends Year 1 CBM with full-distribution inference equivariance: variance from the concept bottleneck propagates through the prediction head analytically; intervention experiments (Year 1) and frame-equivariance tests (Year 2) compose. The combined verification — intervening on `ĉ_drag` AND changing reference frame should commute up to machine precision — is Test 5 in [[Analytic-Sigma-CTPC-Composition]] § verification protocol.
 
 The composition is *additive* with respect to existing [[PhyArch]] hardwiring:
 - PhyArch hardwires inference equivariance + structural invariance (parity-split coefficient assembly)

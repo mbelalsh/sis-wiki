@@ -3,7 +3,7 @@ title: CTPC Design Rationale (Decisions Made + Decisions Deferred to PhyArch-CTP
 tags: [ctpc, sis-design, design-rationale, phyarch, synthesis, research-roadmap, afrl, actionable-interpretability, barbiero-symmetries]
 sources: [raw/papers/my-papers/KDD_submission.pdf, raw/notes/PhyArch_DoublePendulum.pdf, raw/papers/interpretability/Interpretability&Symmetry.pdf, raw/papers/interpretability/ConceptBottleneckModels.pdf, raw/papers/uncertainty-propagation/AnalyticUncertaintyProp.pdf]
 created: 2026-05-09
-updated: 2026-05-09
+updated: 2026-05-10
 sis_relevance: critical
 hard_constraint_possible: yes
 ---
@@ -15,9 +15,9 @@ hard_constraint_possible: yes
 > **Sources synthesized:**
 > - [[CTPC-KDD-Submission]] — probabilistic Predictor-Corrector framework on real CDDIS spacecraft data
 > - [[PhyArch-Double-Pendulum-Benchmark]] — deterministic symmetry-hardwiring benchmark on a controlled toy system
-> - Barbiero et al. 2026, *Interpretability & Symmetry* (`raw/papers/interpretability/Interpretability&Symmetry.pdf`) — *not yet ingested as a separate page; framework summarized in Part III below*
-> - [[Concept-Bottleneck-Models]] (Koh et al. ICML 2020) — the mechanism for verifying concept-closure invariance, applied via [[CBM-CTPC-Composition]] (Year 1 milestone). Ingested 2026-05-09.
-> - [[Analytic-Covariance-Propagation]] (Wright et al. AISTATS 2024) — the technical machinery for verifying information invariance on the full predictive distribution, applied via [[Analytic-Sigma-CTPC-Composition]] (Year 2 milestone). Ingested 2026-05-09.
+> - [[Actionable-Interpretability-Symmetries]] (Barbiero et al. 2026) — the four-symmetry framework operationalized in Part III. **Ingested 2026-05-10.** Part III was substantially revised after this ingest to correct four substantive errors in the original framing — see "Corrections from Barbiero Ingest (2026-05-10)" section in Part III.
+> - [[Concept-Bottleneck-Models]] (Koh et al. ICML 2020) — closes concept-closure invariance AND information invariance (one architectural mechanism, two Barbiero symmetries) via [[CBM-CTPC-Composition]] (Year 1 milestone). Ingested 2026-05-09.
+> - [[Analytic-Covariance-Propagation]] (Wright et al. AISTATS 2024) — refines inference equivariance to the full predictive distribution via [[Analytic-Sigma-CTPC-Composition]] (Year 2 milestone). Ingested 2026-05-09. *Note: originally framed as closing information invariance; corrected 2026-05-10 — see Part III corrections section.*
 
 ## Core Design Philosophy
 
@@ -276,106 +276,190 @@ Each layer hardwires a different aspect of the physics. The architectural compos
 
 ---
 
-# Part III — PhyArch as Practical Instantiation of Actionable Interpretability (Barbiero et al. 2026)
+# Part III — PhyArch + CBM-CTPC + Analytic-Σ-CTPC under the Barbiero Framework
 
-The interpretability literature has recently converged around four symmetries that any *actionable* (intervenable, causally sound) interpretable model should satisfy [Barbiero et al. 2026, *Interpretability & Symmetry*]. Most existing methods satisfy zero or one. **PhyArch + CTPC, as instantiated in [[PhyArch-Double-Pendulum-Benchmark]] + [[CTPC-KDD-Submission]], satisfies three of four — with concept-closure invariance currently asserted architecturally but not yet empirically verified.** This positions PhyArch-CTPC as a candidate for *the first practical instantiation of actionable interpretability in safety-critical dynamical systems*.
+[[Actionable-Interpretability-Symmetries|Barbiero et al. 2026]] is a *position paper* arguing that interpretability research should be defined via four specific symmetries: **inference equivariance** (a user can predict the model's outputs), **information invariance** (existence of a compressed sufficient statistic), **concept-closure invariance** (sound translation between concept vocabularies), and **structural invariance** (model's hypothesis class matches the user's mental model). The paper *posits* that these four suffice; it does not establish them as field consensus. This Part III maps PhyArch + CBM-CTPC + Analytic-Σ-CTPC onto the Barbiero framework, with explicit user-relativity caveats.
 
-> **Note:** the Barbiero et al. 2026 paper is at `raw/papers/interpretability/Interpretability&Symmetry.pdf` but is **not yet ingested as a separate wiki page**. The four-symmetry framework summarized here comes from Bilal's reading; canonical treatment will follow on next ingest. Until then, take the framework characterization as approximate and revise on ingest.
+> **Audit note (2026-05-10).** This Part III was originally drafted (2026-05-09) from discussion context, before the Barbiero paper was ingested. After the canonical ingest ([[Actionable-Interpretability-Symmetries]]), four substantive errors were identified and corrected. **The visible audit trail is at the end of this Part III** ("Corrections from Barbiero Ingest"). The corrections are not embarrassing — they demonstrate the wiki's verification workflow (CLAUDE.md "Never assert a claim without grounding it in a raw source") catching prior overstatement when the source ingest happened.
 
-## The Four Symmetries Mapped to PhyArch / CTPC
+## The Four Symmetries Mapped to PhyArch / CTPC (corrected after Barbiero ingest)
 
-| Barbiero symmetry | Definition (paraphrased) | PhyArch / CTPC instantiation |
+| Barbiero symmetry | Paper definition (formal) | PhyArch + CBM-CTPC + Analytic-Σ-CTPC instantiation |
 |---|---|---|
-| **Inference equivariance** | Predictions transform correctly under group actions on inputs | [[PhyArch]] parity-split assembly: `(invariant coefficient) × (equivariant basis) = equivariant output`. For DP: exact `Z₂` reflection. For orbital: `SO(2)` rotation around Earth's pole (J2-broken from `SO(3)`). Algebraically enforced — no choice of weights produces an inequivariant function. |
-| **Information invariance** | Same prediction under redundant / equivalent input encodings | **Mean prediction**: covered. Geometric features `(uᵢ, tᵢ, ĝ)` invariant to angle-chart choice; RTN frame invariant to ECI-frame inertial orientation; [[Neural-Controlled-Differential-Equation]] control path invariant to sampling-time scheme (within spline regime). **Full predictive distribution**: concrete verification plan exists ([[Analytic-Sigma-CTPC-Composition]]) — replace K-sample MC with [[Analytic-Covariance-Propagation|Wright's analytic moment propagation]], plus enable propagation of TLE input uncertainty. Frame equivariance `Σ_t^ECI = R^T · Σ_t^RTN · R` to machine precision is the empirical test for information invariance on the full distribution. **Promoted from "partial (mean only)" to "Year 2 milestone with verifiable plan" (2026-05-09 update).** |
-| **Concept-closure invariance** | Operating on internal concepts produces predictions that respect those concept manipulations (intervention compositionality) | **Asserted architecturally; concrete verification plan exists.** PhyArch's coefficient networks `aᵢⱼ(z_even)` correspond *by construction* to manipulator-equation entries `M⁻¹C, M⁻¹G`. The mechanism for empirical verification is the [[CBM-CTPC-Composition]] design: insert a [[Concept-Bottleneck-Models|CBM]] layer with named orbital-physics concepts (J2, drag, SRP, third-body, RTN components) between the Latent NCDE decoder and prediction head, with a four-test verification protocol (concept accuracy, intervention accuracy, composability, sanity). **Promoted from "weakest link, asserted only" to "Year 1 milestone with verifiable plan" (2026-05-09 update).** |
-| **Structural invariance** | Architecture mirrors the system's structural form | **PhyArch**: assembly mirrors `q̈ = −M⁻¹(Cq̇ + G)` — the algebraic skeleton of the physics equation. **CTPC**: Predictor-Corrector decomposition mirrors the physics-prior + learned-residual structural decomposition at the system level. Hardwired in architecture, not loss. |
+| **Inference equivariance** | Inference `P_{Y\|X}(Y \| X = x)` is equivariant w.r.t. user mental-model class `Hm` under translations `τ_X : X → X[h]` and `τ_Y : Y → Y[h]` if there exists `P_{Y\|X}^{[h]} ∈ Hm` such that translate-then-predict equals predict-then-translate (diagram commutativity, paper Symmetry 1) | **For mean prediction**: ✓ via [[PhyArch]] parity-split assembly + geometric features. Algebraically enforced under `Z₂` (DP) or `SO(2)` (orbital) for users who understand the relevant symmetry. **For full predictive distribution**: currently approximate due to K-sample MC noise on the covariance; concrete verification plan via [[Analytic-Sigma-CTPC-Composition]] (Year 2) makes mean and covariance both exactly equivariant under input frame transformations. |
+| **Information invariance** | Compressed sufficient statistic `Z` with `H(Z) ≪ H(X)` and `I(Y;X\|Z) = 0`. Markov factorization `P_{Y\|X} = P_{Y\|Z} ∘ P_{Z\|X}` (paper Symmetry 2). About **information bottleneck / minimal sufficient statistic**, NOT about full-distribution invariance under input encodings. | **NOT YET** in current PhyArch + CTPC — geometric features are an *embedding* (4 angles → 12 features), not compression. **Concrete verification plan**: the `k=9` concept bottleneck in [[CBM-CTPC-Composition]] IS the compressed sufficient-statistic Z. Information invariance is closed when concept accuracy verifies that `I(Y;X\|ĉ) ≈ 0` (Test 1 of CBM-CTPC verification protocol). |
+| **Concept-closure invariance** | Sound translation `τ_C : T → T'` between concept vocabularies preserving the underlying object set — `(T, M) ↔ (T', M)`. About *vocabulary translation soundness* (paper Symmetry 3 + Section 2.3.1, citing CBMs as the mechanism). **Interventions are a downstream consequence** in Section 4, not the symmetry itself. | **NOT YET** in current PhyArch + CTPC — no concept layer with vocabulary structure. **Concrete verification plan**: [[CBM-CTPC-Composition]] enforces concept-closure by construction. The k=9 concept set has named physics semantics; alternative vocabularies translating `drag ↔ atmospheric_dissipation` preserve the underlying physical mechanism. |
+| **Structural invariance** | Model's hypothesis class matches **the user's mental model** `Hm` (paper Symmetry 4 + Section 2.4.1). User-relative — "linearity, monotonicity, or sparsity are not first principles but instantiations chosen to match a given user." | **For an orbital-mechanics-trained user (the AFRL operator)**: ✓ via PhyArch's manipulator-equation skeleton — the user's mental model IS the manipulator equation. **For a generic ML practitioner**: weaker; the relevant structural form is different. **Open issue:** CBM-CTPC prediction head `f: ĉ → ŷ` needs explicit structural commitment (linear / monotonic / manipulator-skeleton) — paper Section 2.4.1 explicitly disqualifies CBMs with free-form MLP task predictors. See [[CBM-CTPC-Composition]] § Open Design Decisions. |
 
-## Where Other Methods Fall Short
+## Where Other Methods Stand (corrected after Barbiero ingest)
+
+Symmetry assignments below reflect the *paper's actual definitions* and explicit (dis)qualifications in Sections 2.2.1, 2.3.1, and 2.4.1.
 
 | Method | Inference equivariance | Information invariance | Concept closure | Structural invariance |
 |---|---|---|---|---|
-| Post-hoc explainers (SHAP, LIME) | ✗ | ✗ | ✗ | ✗ |
-| Rudin sparse models (GAMs, decision lists) | ✗ | partial | ✗ | partial |
-| Equivariant NNs (EGNN, Tensor Field Networks) | ✓ | partial | ✗ | ✗ |
-| Concept Bottleneck Models | ✗ | ✗ | ✓ | ✗ |
-| **PhyArch + CTPC (now, 2026-05)** | **✓** | partial (mean only); concrete verification plan: [[Analytic-Sigma-CTPC-Composition]] | ⚠️ asserted (concrete verification plan: [[CBM-CTPC-Composition]]) | **✓** |
-| **CBM-CTPC (Year 1, post-verification)** | **✓** | partial (mean only) | **✓** verified | **✓** |
-| **CBM + Analytic-Σ-CTPC (Year 2 end-state)** | **✓** | **✓** verified | **✓** | **✓** |
+| Post-hoc explainers (SHAP, LIME) | N/A (post-hoc, not a model itself) | ✗ — paper §2.2.1 explicitly disqualifies | N/A | N/A |
+| Rudin sparse models on raw inputs | ✓ for mathematically literate user | ✓ (sparsity → compression) | ✗ — paper §2.3.1 disqualifies decision trees / additive models on non-concept spaces | ✓ (sparse / linear / decision rule = well-defined hypothesis class) |
+| Equivariant NNs (EGNN, Tensor Field Networks) | ✓ for the relevant group | ⚠️ partial (group-equivariant networks remain high-dim) | ✗ (no concept alignment) | ⚠️ user-dependent |
+| Concept Bottleneck Models (Koh et al. 2020) | ✓ for trained user | **✓** (k-dim bottleneck IS compression) | **✓** — paper §2.3.1 explicitly cites CBMs as the mechanism | ✗ if `f: c → y` is free-form MLP — paper §2.4.1 explicitly disqualifies; ✓ if `f` has explicit structural commitment |
+| **PhyArch + CTPC (current, 2026-05)** | ✓ for mean (parity-split + geometric features) | **NOT YET** (no compressed bottleneck) | **NOT YET** (no concept layer) | ✓ for orbital-mechanics-trained user (manipulator-skeleton) |
+| **PhyArch + CBM-CTPC (Year 1, post-verification)** | ✓ for mean | **✓** (CBM bottleneck IS the compressed Z) | **✓** (CBM concept layer with verified semantics) | ✓ contingent on structurally-committed head (open decision) |
+| **PhyArch + CBM-CTPC + Analytic-Σ-CTPC (Year 2 end-state)** | **✓ for full distribution** (mean + covariance both exactly equivariant under input transforms) | ✓ | ✓ | ✓ contingent on structurally-committed head |
 
-- **SHAP / LIME** are post-hoc and model-agnostic. The model itself remains a black box; the explanation is *fit* to the model, not *derived from its structure*. None of the four symmetries are enforced — they are at best approximated by the explanation method.
-- **Rudin sparse models** [Rudin 2019] enforce structural simplicity (sparsity, additivity, decision-rule form). Information invariance is partial — sparse models are often coordinate-fragile. Group equivariance and concept closure are not addressed by the framework.
-- **Equivariant NNs** (EGNN, Tensor Field Networks) deliver inference equivariance and partial information invariance via the group-equivariant architecture. But internal representations are not aligned with system-level structural primitives — the architecture is equivariant *as a function*, but doesn't expose interpretable concepts that can be intervened on.
-- **Concept Bottleneck Models** [Koh et al. 2020] enforce concept-level interventions: you can manipulate a labeled concept and see the prediction change correspondingly. But CBMs are not equivariant, and the concept set is hand-designed rather than emerging from the system's structural form.
-- **PhyArch + CTPC** hits all four (with the concept-closure caveat). The coefficient networks `aᵢⱼ` are *both* parity-split (equivariance) *and* aligned with manipulator-equation entries (concept closure). The structural form is hardwired (structural invariance). Geometric features give mean-level information invariance. **No other entry in the table claims all four.**
+**Key observations from the corrected table:**
 
-## The Publishable Claim
+- **SHAP / LIME** are explicitly disqualified by the paper for failing information invariance (§2.2.1: "operates in the original input space and does not guarantee the existence of a lower-dimensional representation Z"). Other rows are N/A because post-hoc explainers are not models in the framework's sense.
+- **Rudin sparse models** satisfy three of four for the right user — but fail concept closure when applied on raw input spaces, which is the paper's specific disqualification.
+- **CBMs alone** satisfy concept closure AND information invariance (the bottleneck IS the compressed Z) — a single architectural mechanism for two symmetries. They fail structural invariance with free-form MLP heads (paper §2.4.1 disqualification).
+- **PhyArch + CTPC alone** satisfies inference equivariance (for mean) and structural invariance (for physics-trained user) but lacks the bottleneck needed for information invariance and concept closure. **Year 1 (CBM-CTPC) and Year 2 (Analytic-Σ-CTPC) compositions close these gaps.**
+- The end-state (PhyArch + CBM-CTPC + Analytic-Σ-CTPC) is the only entry checking all four boxes — *for the orbital-mechanics-trained user*. This is the user-relative form of the publishable claim below.
 
-> **PhyArch + CTPC is the first practical instantiation of actionable interpretability in safety-critical dynamical systems**, where all four symmetries identified in Barbiero et al. 2026 are enforced *architecturally* — by construction of the model, not added post-hoc by an explanation method or imposed via a soft loss penalty. Validation: [[PhyArch-Double-Pendulum-Benchmark]] (deterministic, controlled toy) for inference equivariance + structural invariance; [[CTPC-KDD-Submission]] (probabilistic, real spacecraft data) for the same two on real OOD trajectories. The remaining two symmetries (information invariance for full distribution, concept closure) are architecturally asserted and have a defined empirical-verification roadmap (next two sections).
+This table reads as the **gap-filling response** to the paper's Section 6 diagnostic: "the concept-based interpretability community has largely focused on concept-closure invariance... but has paid comparatively little attention to structural invariance." PhyArch's manipulator-skeleton brings structural invariance to the concept-based interpretability community; the orbital domain is the operational instantiation.
 
-This is publishable as a framework-level claim independently of any single experiment. The two existing papers are the validation; the *claim itself* is a follow-up paper with the four-symmetry framing as the lens.
+## The Publishable Claim (softened after Barbiero ingest)
 
-## The Honest Caveat — Concept-Closure Invariance Is the Weakest Link (Update: 2026-05-09 — Now a Concrete Plan)
+> **PhyArch + CBM-CTPC + Analytic-Σ-CTPC is a candidate practical instantiation of [[Actionable-Interpretability-Symmetries|Barbiero et al. 2026]]'s four-symmetry framework in safety-critical dynamical systems, with concrete verification protocols for each symmetry, contingent on a target user whose mental model includes orbital-mechanics structure.** The composition addresses Barbiero §6's explicit gap diagnostic — that the concept-based interpretability community has neglected structural invariance — by combining CBM-style concept-closure-and-information-invariance (one bottleneck, two symmetries) with PhyArch-style structural invariance (manipulator-equation skeleton matching the orbital-mechanics-trained user's mental model). Validation: [[PhyArch-Double-Pendulum-Benchmark]] (deterministic, controlled toy) for inference equivariance + structural invariance; [[CTPC-KDD-Submission]] (probabilistic, real spacecraft data) for the same two on real OOD trajectories. The remaining symmetries close via [[CBM-CTPC-Composition]] (Year 1) and [[Analytic-Sigma-CTPC-Composition]] (Year 2).
 
-PhyArch's `aᵢⱼ(z_even)` networks *correspond to* manipulator-equation entries by construction. But asserting this is not the same as verifying it. Specifically, we have **not** yet shown:
+The claim is publishable independently of any single experiment as a framework-level architectural argument. **Three explicit caveats**:
 
-1. **Intervention semantics**: that intervening on `a₁₃` (gravity-on-rod-1, in the DP case) produces a change in `q̈₁` aligned with the physical interpretation of that term — i.e., that the network has actually learned the concept the architecture was supposed to localize.
-2. **Quantitative concept alignment**: that the learned `aᵢⱼ(z_even)` values match analytic-physics derivations of the corresponding `M⁻¹C, M⁻¹G` entries term-by-term, at least up to a constant.
-3. **Transfer of concept semantics**: that the same intervention-compositionality story holds when transferring from DP (`Z₂` parity, gravity-on-rod) to orbital (`SO(2)` rotation, gravity-radial / drag-along-track / SRP-cross-track). The orbital concepts are different; the architecture template is the same; the alignment is not automatic.
+1. The Barbiero framework is itself a *position paper* (arXiv Jan 2026), not yet established as field consensus. Claims that lean on the framework being authoritative inherit this dependency.
+2. Structural invariance is *user-relative*. The "orbital-mechanics-trained user" target is the AFRL operator class — defensible operationally, but the claim doesn't extend to a generic ML practitioner.
+3. The four symmetries are not yet all empirically verified — they have *concrete verification protocols* (Year 1 + Year 2) but the protocols haven't been run.
 
-### The Closing Mechanism Is Now Concrete
+## Current Status of Each Symmetry (after Barbiero ingest)
 
-[[Concept-Bottleneck-Models]] (Koh et al. ICML 2020) provides the architectural pattern: a bottleneck layer where the prediction flows *through* named concepts, with no side channel — making concept interventions well-defined operations on the model.
+### Inference equivariance — *for mean*, ✓ now; *for full distribution*, Year 2
 
-The application to CTPC is the **CBM-CTPC composition**, designed in [[CBM-CTPC-Composition]]:
+PhyArch's parity-split assembly + geometric features make the mean prediction algebraically equivariant under the relevant symmetry group. For DP this is exact under `Z₂` reflection; for orbital it's exact under `SO(2)` rotation around Earth's pole (J2-broken from full `SO(3)`). The full predictive distribution (mean + covariance) currently has approximate covariance equivariance due to K-sample MC noise. [[Analytic-Sigma-CTPC-Composition]] makes both exact via analytic moment propagation — the Year 2 milestone.
 
-- **Architecture.** Insert a `k=9` concept bottleneck between the Latent NCDE decoder hidden state `z_d(t)` and the prediction head. Concept set: 6 cause concepts (J2, J3, drag, SRP, lunar 3-body, solar 3-body) + 3 frame-decomposition concepts (R, T, N).
-- **Training.** Independent scheme — `g` and `f` trained separately, `f` trained on *true* concept values. **Stated design decision** because the operational use case IS intervention; choosing sequential or joint would optimize the wrong metric for AFRL deployment.
-- **Verification protocol.** Four tests: concept accuracy (necessary precondition), intervention accuracy (the core test — counterfactual model response matches analytic counterfactual when re-running GMAT with the perturbation removed), composability of multi-concept interventions, sanity check with implausible values.
-- **Operational counterfactuals.** Once verified, AFRL operators can ask first-class queries like "what if the atmosphere model is wrong by 30%?" → `ĉ_drag(t) ← 1.3 · ĉ_drag(t)`, propagate, observe corrected forecast + ellipsoid.
+### Information invariance — Year 1 milestone via the CBM bottleneck
 
-### Status Update (2026-05-09)
+Geometric features in PhyArch are an *embedding*, not a compression — they don't satisfy information invariance per the paper's definition (`H(Z) ≪ H(X)`). The k=9 concept bottleneck in [[CBM-CTPC-Composition]] IS the compressed sufficient statistic Z; **the bottleneck closes information invariance simultaneously with concept-closure invariance** (one architectural mechanism, two symmetries). Verification: Test 1 of CBM-CTPC verification protocol checks that `I(Y;X|ĉ) ≈ 0`.
 
-Part III's claim of "all four Barbiero symmetries" still carries an **asterisk** on concept closure — but the asterisk is now annotated. Specifically:
+### Concept-closure invariance — Year 1 milestone via the CBM concept layer
 
-- ❌ Previous (pre-2026-05-09): "asserted, not verified, mechanism is a forward reference." Operationally fragile claim.
-- ✓ Current (post-2026-05-09): "asserted architecturally, concrete verifiable plan via [[CBM-CTPC-Composition]] with named protocol." Operationally defensible to AFRL with a clear path to empirical verification.
+PhyArch's coefficient networks `aᵢⱼ(z_even)` correspond to manipulator-equation entries by construction, but this is *structural* alignment (the `aᵢⱼ` indices map to physics quantities), not *concept-vocabulary* alignment in the Barbiero sense (sound translation between concept symbol sets). [[CBM-CTPC-Composition]] adds explicit named-concept supervision (J2, drag, SRP, etc.) — the bottleneck enforces concept-closure by construction (Koh et al. 2020 cited as the mechanism in paper §2.3.1). Verification: Tests 2–4 of CBM-CTPC verification protocol check intervention semantics, composability, and sanity.
 
-The asterisk lifts entirely once Year 1 implementation runs the verification protocol and reports passing thresholds. **The publishable claim of "first practical instantiation of actionable interpretability in safety-critical dynamical systems" is now defensible — pre-verification (architecture admits the property, with concrete protocol to verify) and post-verification (empirically demonstrated).**
+### Structural invariance — *user-relative*; ✓ for orbital-mechanics-trained user
 
-## Two-Year Research Arc
+PhyArch's manipulator-equation skeleton matches the user's mental model when the user is an orbital-mechanics-trained operator (the AFRL deployment case). For a generic ML practitioner the relevant structural form is different; the claim doesn't transfer.
+
+**Open issue.** Per Barbiero §2.4.1, CBMs with free-form MLP task predictors fail structural invariance ("hypothesis space lacks any well-defined structure"). For CBM-CTPC, the prediction head `f: ĉ → ŷ` therefore needs an explicit structural commitment. The choice (linear / monotonic / manipulator-skeleton) is flagged as an **open design decision** in [[CBM-CTPC-Composition]] § Open Design Decisions; the right answer is user-dependent and is part of the Year 1 implementation work.
+
+### Status table
+
+| Symmetry | Pre-Year-1 status | Year 1 status | Year 2 status | Closing mechanism |
+|---|---|---|---|---|
+| Inference equivariance (mean) | ✓ | ✓ | ✓ | PhyArch parity-split |
+| Inference equivariance (full distribution) | ⚠️ approximate (MC noise) | ⚠️ approximate | ✓ exact | Analytic-Σ propagation |
+| Information invariance | NOT YET | ✓ | ✓ | CBM bottleneck (k=9 compressed Z) |
+| Concept-closure invariance | NOT YET | ✓ | ✓ | CBM concept layer |
+| Structural invariance | ✓ for physics user | ✓ contingent on head commitment | ✓ contingent on head commitment | PhyArch manipulator-skeleton + structurally-committed head |
+
+## Two-Year Research Arc (corrected after Barbiero ingest)
 
 | Time | Milestone | Status | Closes |
 |---|---|---|---|
-| **Now (2026-05)** | PhyArch DP benchmark + CTPC KDD submission | ✓ Done | Inference equivariance + structural invariance; mean-level information invariance; *asserted* concept closure |
-| **Now (2026-05-09)** | CBM-CTPC composition design ([[CBM-CTPC-Composition]]) — architecture, 9-concept set, independent training scheme, four-test verification protocol | ✓ Designed (implementation pending) | Concept-closure invariance: from *asserted* to *concrete verifiable plan* |
-| **Year 1** | Implement CBM-CTPC; run verification protocol; report intervention-success rates + concept-alignment metrics | Open | Concept-closure invariance: from *concrete plan* to *empirically verified* |
-| **Now (2026-05-09)** | Analytic-Σ-CTPC composition design ([[Analytic-Sigma-CTPC-Composition]]) — replace K-sample MC with [[Analytic-Covariance-Propagation\|Wright et al. 2024]] analytic moment propagation, enable TLE uncertainty propagation, frame-equivariance verification protocol | ✓ Designed (implementation pending) | Information invariance: from *partial (mean only)* to *concrete verifiable plan* |
-| **Year 2** | Implement Analytic-Σ-CTPC; run frame-equivariance test (`Σ_t^ECI = R^T Σ_t^RTN R` to machine precision); derive analytic-Σ-NCDE theorem (potential standalone publication) | Open | Information invariance: from *concrete plan* to *empirically verified for full distribution* |
-| **End-state** | Full Barbiero et al. 2026 compliance + formal verification | Aspirational | All four symmetries empirically verified + formally proven (links to Part II Q5) |
+| **Now (2026-05)** | PhyArch DP benchmark + CTPC KDD submission | ✓ Done | Inference equivariance for mean (PhyArch parity-split); structural invariance for orbital-mechanics-trained user (manipulator-skeleton) |
+| **Now (2026-05-09)** | CBM-CTPC composition design ([[CBM-CTPC-Composition]]) — architecture, 9-concept set, independent training scheme, four-test verification protocol | ✓ Designed (implementation pending) | **BOTH concept-closure AND information invariance** (the k=9 bottleneck IS the compressed sufficient statistic Z): from "not yet" to "concrete verifiable plan" |
+| **Year 1** | Implement CBM-CTPC; run verification protocol; report concept accuracy + intervention-success rates + concept-alignment metrics. **Plus:** decide structural commitment of prediction head `f: ĉ → ŷ` (linear / monotonic / manipulator-skeleton) | Open | Concept-closure + information invariance: from *concrete plan* to *empirically verified* |
+| **Now (2026-05-09)** | Analytic-Σ-CTPC composition design ([[Analytic-Sigma-CTPC-Composition]]) — replace K-sample MC with [[Analytic-Covariance-Propagation\|Wright et al. 2024]] analytic moment propagation, enable TLE uncertainty propagation, frame-equivariance verification protocol | ✓ Designed (implementation pending) | **Inference equivariance refined to full distribution** (NOT information invariance per Barbiero — that's Year 1's job): from *partial (mean only)* to *concrete verifiable plan* |
+| **Year 2** | Implement Analytic-Σ-CTPC; run frame-equivariance test (`Σ_t^ECI = R^T Σ_t^RTN R` to machine precision); derive analytic-Σ-NCDE theorem (potential standalone publication) | Open | Inference equivariance for full predictive distribution: from *concrete plan* to *empirically verified* |
+| **End-state** | Full Barbiero et al. 2026 framework instantiation for orbital-mechanics-trained users + formal verification | Aspirational | All four symmetries empirically verified + formally proven (links to Part II Q5) |
 
-**Sequencing rationale:**
+**Sequencing rationale (corrected):**
 
-- **Concept closure first.** The CBM layer also makes the model *debuggable* — you cannot safely deploy a model whose internal concepts you cannot inspect. Operational priority.
-- **Analytic covariance propagation second.** Extending information invariance to the covariance requires the concept layer to define *what* is being propagated through *which* concept. The layer ordering matters.
-- **Formal verification last.** Verification is worth the effort only when the architectural pieces are stable. Premature verification of an unstable architecture produces re-work. Connect to Part II Q5 once the architectural pieces are settled.
+- **CBM bottleneck first (Year 1).** Closes TWO symmetries at once — concept-closure AND information invariance — because the bottleneck IS the compressed sufficient-statistic Z required by Barbiero's Symmetry 2. Plus makes the model debuggable: you cannot safely deploy a model whose internal concepts you cannot inspect.
+- **Structurally-committed head (within Year 1).** Per Barbiero §2.4.1, free-form MLP heads disqualify CBM from structural invariance. The head commitment (linear / monotonic / manipulator-skeleton) needs to be made during the CBM-CTPC implementation. Open design decision in [[CBM-CTPC-Composition]].
+- **Analytic-Σ propagation second (Year 2).** Refines inference equivariance from "mean exact + covariance approximate (MC noise)" to "full distribution exactly equivariant under input transformations." This is *not* about closing information invariance (which Year 1 already did); it's about extending an existing symmetry from one moment to all moments.
+- **Formal verification last.** Worth the effort only when the architectural pieces are stable. Premature verification of an unstable architecture produces re-work. Connect to Part II Q5 once the architectural pieces are settled.
 
 The end-state is a CTPC variant where:
 
-1. Architecture algebraically enforces all four symmetries.
-2. Each enforcement is empirically validated by intervention experiments + concept-alignment studies + covariance-equivariance tests.
+1. Architecture instantiates all four Barbiero symmetries for orbital-mechanics-trained users.
+2. Each instantiation is empirically verified by per-symmetry verification protocols.
 3. The whole pipeline is formally verified against a specification of "safe orbital correction."
 
 This is the AFRL-deployable form. The current 2026-05 state is the architectural foundation for that deployable form, not the deployable form itself.
 
 ## Cross-References (Part III specific)
 
-- [[Concept-Bottleneck-Models]] — the architectural pattern (Koh et al. ICML 2020) being applied to verify concept-closure invariance. **Now ingested.**
-- [[CBM-CTPC-Composition]] — concrete Year 1 milestone design: how to insert a CBM into the Latent NCDE Corrector with named orbital-physics concepts (J2, drag, SRP, third-body, RTN). **Created 2026-05-09.**
-- [[Analytic-Covariance-Propagation]] — Wright et al. AISTATS 2024 paper providing the technical machinery for analytic moment propagation through neural networks. **Now ingested.**
-- [[Analytic-Sigma-CTPC-Composition]] — concrete Year 2 milestone design: replace K-sample MC with analytic propagation, enable TLE uncertainty source, frame-equivariance verification protocol for information invariance on the full predictive distribution. **Created 2026-05-09.**
-- [[Physics-Based-FD-Convolutional-Layer]] — the discrete analog of "freeze what's known structurally" for spatial PDEs; PhyArch's parity-split assembly is the symmetry-respecting analog for ODEs (both encode structural invariance, the fourth Barbiero symmetry, into the architecture rather than the loss)
-- `raw/papers/interpretability/Interpretability&Symmetry.pdf` — Barbiero et al. 2026, the framework being instantiated. **Not yet ingested as a wiki page** — flagged as the canonical source for the four symmetries; full treatment of their definitions, examples, and counter-examples deferred until ingest.
+- [[Actionable-Interpretability-Symmetries]] — Barbiero et al. 2026 canonical paper page. **Now ingested 2026-05-10.** This is the source against which the Part III corrections were validated.
+- [[Concept-Bottleneck-Models]] — Koh et al. ICML 2020 concept-bottleneck pattern, cited by Barbiero §2.3.1 as the mechanism for concept-closure invariance. **Ingested 2026-05-09.**
+- [[CBM-CTPC-Composition]] — concrete Year 1 milestone design: how to insert a CBM into the Latent NCDE Corrector. Closes BOTH concept-closure AND information invariance simultaneously (the k=9 bottleneck IS the compressed sufficient statistic Z). **Created 2026-05-09.**
+- [[Analytic-Covariance-Propagation]] — Wright et al. AISTATS 2024 paper providing the technical machinery for analytic moment propagation through neural networks. **Ingested 2026-05-09.**
+- [[Analytic-Sigma-CTPC-Composition]] — concrete Year 2 milestone design refining inference equivariance from "mean exact" to "full distribution exact" via analytic Σ propagation. **Created 2026-05-09; reframed 2026-05-10** — does NOT close Barbiero's information invariance (which is Year 1's job); refines inference equivariance for the full distribution.
+- [[Physics-Based-FD-Convolutional-Layer]] — the discrete analog of "freeze what's known structurally" for spatial PDEs; PhyArch's parity-split assembly is the symmetry-respecting analog for ODEs.
+
+---
+
+## Corrections from Barbiero Ingest (2026-05-10)
+
+> **Why this section exists.** Part III was originally drafted (2026-05-09) before [[Actionable-Interpretability-Symmetries|Barbiero et al. 2026]] was ingested as a wiki page. The four-symmetry framework summarized in Part III came from discussion context (Bilal's verbal description), not from the paper itself. After the canonical ingest (2026-05-10), four substantive errors were identified and corrected.
+>
+> **The visible audit trail is intentional.** This is a demonstration that the wiki's verification workflow (CLAUDE.md *Foundational Reference* + *Page Conventions* + "Never assert a claim without grounding it in a raw source or existing wiki page") works as designed: catching prior overstatement when the canonical source ingest happened. An AFRL reviewer reading this section sees intellectual honesty and a self-correcting documentation pipeline, not sloppiness.
+
+### Correction 1 — Information invariance is about compression, not full-distribution invariance under input transformations
+
+**Original framing (2026-05-09):** Information invariance was framed as "same prediction under redundant / equivalent input encodings," with the gap framed as "covariance not yet" closeable by analytic moment propagation (Year 2 milestone via [[Analytic-Sigma-CTPC-Composition]]).
+
+**What the paper actually says (Barbiero §2.2):** Information invariance requires a compressed sufficient statistic `Z` with `H(Z) ≪ H(X)` AND `I(Y;X|Z) = 0`. This is about the *information bottleneck / minimal sufficient statistic* property — Markov factorization `P_{Y|X} = P_{Y|Z} ∘ P_{Z|X}`.
+
+**Implications for the milestones:**
+
+- **CBM-CTPC (Year 1) closes BOTH concept-closure invariance AND information invariance simultaneously** — the k=9 concept bottleneck IS the compressed sufficient-statistic Z that information invariance requires. This is the *most important correction*: the original framing double-counted the symmetries by attributing concept-closure to CBM and information invariance to analytic Σ. In fact the bottleneck closes both. **One architectural mechanism, two Barbiero symmetries.** See [[CBM-CTPC-Composition]] for the elevated framing.
+- **Analytic-Σ-CTPC (Year 2) does NOT close Barbiero's information invariance.** What it actually refines is *inference equivariance applied to the full predictive distribution*: the mean is currently frame-equivariant via geometric features; the covariance is approximate due to K-sample MC noise. Year 2 makes both exactly equivariant — extending inference equivariance from "mean only" to "full distribution under input transformations." Still a valuable contribution; just not the Barbiero symmetry it was originally claimed to close.
+
+### Correction 2 — Concept-closure invariance is about sound translation, not intervention compositionality
+
+**Original framing:** Concept-closure invariance was framed as "operating on internal concepts produces predictions that respect those concept manipulations (intervention compositionality)."
+
+**What the paper actually says (Barbiero §2.3):** Concept-closure invariance is about *sound translation between concept vocabularies* — `τ_C : T → T'` is sound if for any pair of concepts `C = (T, M)` and `C' = (T', M)` (same underlying object set), the closure diagram commutes. Example: `τ_C = {black → noir}` is sound because both refer to the same set of black objects. *Interventions* are a downstream consequence in §4 (Bayesian inversion on aligned concept-based models), not the symmetry definition itself.
+
+**Implications:** The CBM mapping is still correct — paper §2.3.1 explicitly cites CBMs as enforcing concept-closure by construction. The intervention story in [[CBM-CTPC-Composition]]'s verification protocol is a downstream consequence enabled by the framework, not the symmetry definition. The verification protocol's intervention tests are valid checks of the *framework's downstream consequences*, but concept-closure invariance itself is about vocabulary translation soundness.
+
+### Correction 3 — Structural invariance is user-relative, not "physics-form-mimicking"
+
+**Original framing:** Structural invariance was framed as "architecture mirrors the system's structural form" — implying a universal property of physics-mimicking architectures.
+
+**What the paper actually says (Barbiero §2.4):** Structural invariance requires the model's hypothesis class to match the *user's mental model* `Hm`. The paper emphasizes (§2.4.1): "linearity, monotonicity, or sparsity are not first principles but instantiations of structural properties chosen to match a given user." User-relative.
+
+**Implications:**
+
+- All claims about PhyArch+CTPC's structural invariance must specify the target user class. PhyArch's manipulator-skeleton satisfies structural invariance *for an orbital-mechanics-trained user* (the AFRL operator); for a generic ML practitioner the relevant structural form is different.
+- Barbiero §2.4.1 explicitly disqualifies CBMs with DNN task predictors: "concept-based models whose mappings are arbitrary, such as employing DNNs, have a hypothesis space that lacks any well-defined structure and therefore do not satisfy this symmetry." For CBM-CTPC, the prediction head `f: ĉ → ŷ` therefore needs an explicit structural commitment (linear / monotonic / manipulator-skeleton). This is now flagged as an open design decision in [[CBM-CTPC-Composition]] § Open Design Decisions.
+
+### Correction 4 — The publishable claim was overstated
+
+**Original claim:** "PhyArch + CTPC is the first practical instantiation of actionable interpretability in safety-critical dynamical systems, where all four symmetries identified in Barbiero et al. 2026 are enforced architecturally."
+
+**Two problems:**
+
+1. **"First practical instantiation"** claims primacy in a framework whose primacy isn't established. Barbiero et al. is a *position paper* (says so in title — "Position: Actionable Interpretability Must Be Defined in Terms of Symmetries") arguing this framework SHOULD be the standard, not that it IS. Claiming "first instantiation" of an argued-for framework is fragile.
+2. **"All four enforced architecturally"** needs requalification because (a) information invariance requires *compression*, which only the CBM bottleneck provides — not PhyArch alone; (b) structural invariance is user-relative; (c) inference equivariance currently holds only for the mean, not the full predictive distribution.
+
+**Corrected claim** (now in "The Publishable Claim" section above, post-correction):
+
+> "PhyArch + CBM-CTPC + Analytic-Σ-CTPC is a candidate practical instantiation of [[Actionable-Interpretability-Symmetries|Barbiero et al. 2026]]'s four-symmetry framework in safety-critical dynamical systems, with concrete verification protocols for each symmetry, contingent on a target user whose mental model includes orbital-mechanics structure."
+
+Drops "first." Acknowledges position-paper status. Makes user-relativity explicit. Still defensible to AFRL operators (the target physics-trained user class). **Three explicit caveats are now stated in the publishable-claim section above** (position-paper status, user-relativity, verification not yet executed).
+
+### Connection to Barbiero §6 Call to Action
+
+The paper's §6 explicitly identifies a gap: "the concept-based interpretability community has largely focused on concept-closure invariance, but has paid comparatively little attention to structural invariance. As a result, concept-based models often exhibit arbitrary behaviour (e.g., when using DNNs as task predictors) or are weak classifiers (e.g., when using linear models as task predictors)."
+
+PhyArch + CBM-CTPC is *gap-filling for that exact deficit*: combining CBM's concept-closure + information invariance with PhyArch's structural commitment (manipulator-equation skeleton matching the orbital-mechanics-trained user). This framing is stronger than the original "first practical instantiation" claim because it's framework-internal — the contribution is bringing structural invariance to concept-based methods in a specific operational domain, addressing a specific deficit identified by the framework's own authors.
+
+### Summary of corrections impact
+
+| Where | Pre-2026-05-10 framing | Corrected framing |
+|---|---|---|
+| Information invariance | Closed by Year 2 (analytic Σ propagation) | Closed by Year 1 (CBM bottleneck = compressed Z) |
+| Concept-closure invariance | About intervention compositionality | About sound translation between concept vocabularies |
+| Structural invariance | About architecture mirroring physical equations | About hypothesis class matching user's mental model (user-relative) |
+| Publishable claim | "First practical instantiation" | "Candidate practical instantiation, contingent on physics-trained user" |
+| Year 1 milestone (CBM-CTPC) | Closes 1 symmetry (concept-closure) | Closes 2 symmetries (concept-closure + information invariance) |
+| Year 2 milestone (Analytic-Σ-CTPC) | Closes information invariance for full distribution | Refines inference equivariance from mean to full distribution |
+| Open design decisions | (none flagged at this level) | Prediction head structural commitment for CBM-CTPC (linear / monotonic / manipulator-skeleton) |
 
 ---
 

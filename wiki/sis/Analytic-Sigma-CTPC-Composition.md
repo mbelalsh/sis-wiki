@@ -10,22 +10,24 @@ hard_constraint_possible: yes
 
 # Analytic-Σ-CTPC Composition (Year 2 Design)
 
-> **Forward-looking design document.** This page lays out the architecture, training/inference protocol, verification protocol, and open research questions for replacing the Latent NCDE Corrector's K-sample Monte Carlo aggregation with [[Analytic-Covariance-Propagation|Wright's analytic moment propagation]], plus enabling propagation of TLE input uncertainty through the full pipeline. Closes the information-invariance gap identified in [[CTPC-Design-Rationale]] Part III. **Year 2 milestone of the two-year PhyArch-CTPC research arc**, sequentially after [[CBM-CTPC-Composition]] (Year 1).
+> **Forward-looking design document.** This page lays out the architecture, training/inference protocol, verification protocol, and open research questions for replacing the Latent NCDE Corrector's K-sample Monte Carlo aggregation with [[Analytic-Covariance-Propagation|Wright's analytic moment propagation]], plus enabling propagation of TLE input uncertainty through the full pipeline. **Year 2 milestone of the two-year PhyArch-CTPC research arc**, sequentially after [[CBM-CTPC-Composition]] (Year 1).
+>
+> **Important reframing (2026-05-10):** this design was originally framed as closing the *information invariance* gap from [[CTPC-Design-Rationale]] Part III. After the canonical [[Actionable-Interpretability-Symmetries|Barbiero]] ingest, that framing was identified as incorrect: information invariance per Barbiero is about *compressed sufficient statistics* (closed by the CBM bottleneck in Year 1), not about full-distribution invariance under input transformations. This Year 2 design instead **refines inference equivariance from "mean exact" to "full distribution exact"** under input frame transformations. The architectural and verification work below is unchanged; only the symmetry the work closes is reframed. See [[CTPC-Design-Rationale]] § Corrections from Barbiero Ingest for the audit trail.
 
 ## One-Line Intuition
 
-Replace [[CTPC-KDD-Submission]]'s K-sample Monte Carlo over latent samples with **layer-by-layer analytic propagation of full covariance matrices** through the Latent NCDE Corrector. This produces an *exact* predictive covariance — no MC sampling noise — and enables propagation of **TLE input uncertainty** all the way to the output uncertainty ellipsoid. The empirical test for Barbiero **information invariance**: predictive covariance must transform exactly correctly under input frame transformations (ECI ↔ RTN), to machine precision. Currently false (because MC sampling noise breaks frame equivariance); becomes structurally enforced under analytic propagation.
+Replace [[CTPC-KDD-Submission]]'s K-sample Monte Carlo over latent samples with **layer-by-layer analytic propagation of full covariance matrices** through the Latent NCDE Corrector. This produces an *exact* predictive covariance — no MC sampling noise — and enables propagation of **TLE input uncertainty** all the way to the output uncertainty ellipsoid. The empirical test: predictive covariance must transform exactly correctly under input frame transformations (ECI ↔ RTN), to machine precision. Currently false (because MC sampling noise breaks frame equivariance); becomes structurally enforced under analytic propagation. **What this verifies in the Barbiero framework:** *inference equivariance* (Symmetry 1) extended from the mean to the full predictive distribution — not information invariance.
 
 ## Why This Was Done
 
-[[CTPC-Design-Rationale]] Part III identifies four [[Hamiltonian-vs-Lagrangian-Duality|Barbiero]] symmetries for actionable interpretability. After the Year 1 [[CBM-CTPC-Composition]], CBM-CTPC will satisfy three of four. **Information invariance is the remaining gap**: currently flagged as "partial (mean only)" because the *mean prediction* is invariant to input encoding (geometric features, RTN frame) but the *full predictive distribution* (mean + covariance) isn't.
+[[CTPC-Design-Rationale]] Part III identifies four [[Actionable-Interpretability-Symmetries|Barbiero]] symmetries. After the Year 1 [[CBM-CTPC-Composition]], the CBM bottleneck closes both concept-closure invariance AND information invariance (the bottleneck IS the compressed sufficient statistic Z). Structural invariance holds for orbital-mechanics-trained users (PhyArch's manipulator-skeleton + structurally-committed head). **Inference equivariance is partially closed** — the *mean* prediction is exactly equivariant under input frame transformations (geometric features handle this), but the *covariance* has K-sample MC sampling noise that breaks exact equivariance.
 
 The deficit has two sources:
 
-1. **Monte Carlo sampling noise.** The K-sample latent aggregation (CTPC paper Algorithm 1, lines 8–15) introduces Monte Carlo error that breaks exact frame equivariance — `Σ_t^ECI(t) ≠ R(t)^T · Σ_t^RTN(t) · R(t)` to machine precision because the K samples are different draws.
+1. **Monte Carlo sampling noise.** The K-sample latent aggregation (CTPC paper Algorithm 1, lines 8–15) introduces Monte Carlo error that breaks exact frame equivariance — `Σ_t^ECI(t) ≠ R(t)^T · Σ_t^RTN(t) · R(t)` to machine precision because the K samples are different draws. This means inference equivariance for the *full predictive distribution* is approximate, not exact.
 2. **TLE input uncertainty isn't propagated at all.** The encoder receives `e_ECI(t_0:T')` as deterministic past errors. The TLE-derived true state has its own measurement uncertainty `Σ_TLE` that should flow through the entire pipeline but currently doesn't.
 
-**Wright et al. AISTATS 2024 ([[Analytic-Covariance-Propagation]]) provides the technical machinery to fix both.** Theorem 1 gives closed-form analytic covariance through nonlinear activations of Gaussian inputs; Algorithm 1 gives the layer-by-layer propagation procedure for full networks. The application to the Latent NCDE Corrector is the Year 2 milestone of the PhyArch-CTPC roadmap.
+**Wright et al. AISTATS 2024 ([[Analytic-Covariance-Propagation]]) provides the technical machinery to fix both.** Theorem 1 gives closed-form analytic covariance through nonlinear activations of Gaussian inputs; Algorithm 1 gives the layer-by-layer propagation procedure for full networks. The application to the Latent NCDE Corrector — refining inference equivariance from mean-only to full-distribution — is the Year 2 milestone of the PhyArch-CTPC roadmap.
 
 ## The Architecture
 
@@ -158,9 +160,11 @@ Synthesize TLE state with known `Σ_TLE`. Propagate through Analytic-Σ-CTPC. Ve
 - Output uncertainty decreases with stronger learned latent posterior (the encoder should reduce uncertainty when past errors are informative)
 - The total predictive ellipsoid contains the true forecast error with correct frequency (frequentist coverage at α = 0.95 should be ~95%)
 
-### Test 4: Frame Equivariance ⇒ Information Invariance Verified (BARBIERO TEST)
+### Test 4: Frame Equivariance ⇒ Inference Equivariance for Full Distribution Verified (REFRAMED 2026-05-10)
 
-**This is the empirical test for information invariance in the Barbiero sense, not a sanity check.** Frame equivariance under analytic propagation is exactly what information invariance demands for the full predictive distribution. If this test passes, **information invariance is promoted from "asserted, partial (mean only)" to "verified for full predictive distribution"** in [[CTPC-Design-Rationale]] Part III.
+**This is the empirical test for *inference equivariance* on the full predictive distribution.** Frame equivariance of the predictive covariance under input frame transformations is exactly what inference equivariance demands when the output distribution is parameterized by `(μ, Σ)` rather than the mean alone. If this test passes, **inference equivariance is promoted from "verified for mean only" to "verified for full predictive distribution"** in [[CTPC-Design-Rationale]] Part III.
+
+> **Reframing note (2026-05-10):** Originally this test was framed as the empirical check for *information invariance*. After the canonical [[Actionable-Interpretability-Symmetries|Barbiero]] ingest (2026-05-10), that framing was identified as incorrect: information invariance per Barbiero is about *compressed sufficient statistics* (`H(Z) ≪ H(X)` and `I(Y;X|Z) = 0`), which the CBM bottleneck in [[CBM-CTPC-Composition]] (Year 1) closes. Frame equivariance of `Σ_t` is a property of *inference equivariance* (Barbiero Symmetry 1) extended from the mean to the full predictive distribution, not a property of information invariance. The architectural and verification work below is unchanged; only the symmetry the work closes is reframed. See [[CTPC-Design-Rationale]] § Corrections from Barbiero Ingest for the full audit trail.
 
 **Protocol:**
 1. Sample TLE state `(r, v) ∈ ℝ⁶` with covariance `Σ_TLE^ECI` in ECI frame
@@ -170,9 +174,9 @@ Synthesize TLE state with known `Σ_TLE`. Propagate through Analytic-Σ-CTPC. Ve
 
 **Pass criterion:** Frobenius norm of the difference is below `1e-10` (machine precision for double-precision arithmetic). Currently the K-sample MC introduces `O(1/√K)` Monte Carlo noise that breaks this exact equivariance.
 
-**Why this is the Barbiero test, not a sanity check.** Barbiero information invariance demands: "same prediction under redundant/equivalent input encodings." For the *full predictive distribution* `p(e_t | data)`, "same" means the distribution must transform exactly correctly under input transformations — including its covariance structure. Frame equivariance of `Σ_t` under `(ECI ↔ RTN)` IS the structural test for information invariance on the covariance. There is no separate Barbiero check for covariance beyond this — frame equivariance under transformation is what information invariance means for Gaussian/Student-t output distributions.
+**Why this is the test for inference equivariance on the full distribution, not a sanity check.** Barbiero's inference equivariance (Symmetry 1) is defined as commutativity of the diagram `P_{Y|X} → translate-then-predict = predict-then-translate`. For a model with parametric output distribution `(μ, Σ)`, "same prediction" under translation requires both `μ` and `Σ` to transform consistently. The mean is currently exactly equivariant via PhyArch's geometric features; the covariance is approximate due to MC noise. Test 4 verifies that under analytic propagation, the covariance also transforms exactly correctly — completing inference equivariance for the full distribution. **There is no separate Barbiero check for the covariance beyond this — frame equivariance under transformation IS what inference equivariance means for the second moment.**
 
-If Test 4 passes, the asterisk on information invariance in [[CTPC-Design-Rationale]] Part III lifts entirely. The publishable claim of "all four Barbiero symmetries verified" becomes defensible without caveats.
+If Test 4 passes, the "mean only" qualifier on inference equivariance in [[CTPC-Design-Rationale]] Part III lifts entirely. The publishable claim of "all four Barbiero symmetries verified for orbital-mechanics-trained users" becomes defensible without the inference-equivariance caveat (assuming Year 1 has also been verified).
 
 ### Test 5: Composition with CBM Bottleneck (Year 1 + Year 2)
 
@@ -199,20 +203,20 @@ This closes the four-symmetry verification: structural, inference equivariance, 
 
 ## Connection to SiS / CTPC
 
-Analytic-Σ-CTPC closes the **Year 2 milestone** of the two-year research arc in [[CTPC-Design-Rationale]] Part III:
+Analytic-Σ-CTPC closes the **Year 2 milestone** of the two-year research arc in [[CTPC-Design-Rationale]] Part III. **Reframed 2026-05-10** after the canonical [[Actionable-Interpretability-Symmetries|Barbiero]] ingest:
 
-- **Year 1 (CBM-CTPC):** verified concept-closure invariance via concept bottleneck + intervention protocol
-- **Year 2 (Analytic-Σ-CTPC, this design):** verified information invariance for full predictive distribution via analytic propagation + frame-equivariance test
-- **End-state:** all four Barbiero symmetries verified + formal verification (links to Q5 of Part II)
+- **Year 1 (CBM-CTPC):** closes concept-closure invariance AND information invariance simultaneously (the bottleneck IS the compressed sufficient statistic Z). One architectural mechanism, two Barbiero symmetries.
+- **Year 2 (Analytic-Σ-CTPC, this design):** refines inference equivariance from "mean exact" to "full distribution exact" under input frame transformations. Closes the inference-equivariance-for-covariance gap, NOT information invariance per Barbiero (which Year 1 already closed).
+- **End-state:** all four Barbiero symmetries empirically verified for orbital-mechanics-trained users + formal verification (links to Q5 of Part II)
 
 The composition with [[CBM-CTPC-Composition]] is *additive*, not orthogonal:
-- CBM bottleneck constrains the prediction head's input to flow through named concepts
-- Analytic propagation operates on the variance through that bottleneck
+- CBM bottleneck closes concept-closure + information invariance with one mechanism
+- Analytic propagation operates on the variance through that bottleneck — variance from CBM bottleneck flows analytically through prediction head; intervention experiments (Year 1) and frame-equivariance tests (Year 2) compose
 - Test 5 above is the joint-verification step that ensures both pass simultaneously
 
 The composition with [[PhyArch]] is also additive:
-- PhyArch hardwires inference equivariance + structural invariance via parity-split assembly
-- Analytic propagation propagates the parity-typed variance correctly through the assembly
+- PhyArch hardwires inference equivariance for the mean + structural invariance (for orbital-mechanics-trained user) via parity-split assembly + manipulator-skeleton
+- Analytic propagation refines inference equivariance to also hold for the covariance, exactly equivariant under frame transformations
 - The PhyArch-style coefficient networks `aᵢⱼ(z_even)` are MLPs to which Wright's machinery applies directly
 
 ## Forward Reference: Formal Verification Stub

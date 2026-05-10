@@ -12,7 +12,7 @@ hard_constraint_possible: yes
 
 > Koh, Nguyen, Tang, Mussmann, Pierson, Kim, Liang. *Concept Bottleneck Models*. ICML 2020. arXiv:2007.04612.
 
-> **Operational relevance:** this is the mechanism for verifying *concept-closure invariance* — currently the weakest of the four [[Hamiltonian-vs-Lagrangian-Duality|Barbiero]] symmetries in [[CTPC-Design-Rationale]] Part III. See [[CBM-CTPC-Composition]] for the concrete plan to apply CBM to the Latent NCDE Corrector.
+> **Operational relevance:** this is the mechanism cited by [[Actionable-Interpretability-Symmetries|Barbiero et al. 2026]] §2.3.1 as the architectural enforcer of *concept-closure invariance* (Symmetry 3). It also closes *information invariance* (Symmetry 2) when the bottleneck is small enough — the k-dim concept layer IS the compressed sufficient statistic Z. See [[CBM-CTPC-Composition]] for the concrete plan to apply CBM to the Latent NCDE Corrector, closing both symmetries with one architectural mechanism.
 
 ## One-Line Intuition
 
@@ -146,7 +146,7 @@ CBM has lower excess error when **`k/d` is small** (few concepts relative to inp
 
 ## Connection to SiS / CTPC
 
-CBM is the **architectural mechanism for verifying concept-closure invariance** in PhyArch-CTPC — the weakest of the four [[Hamiltonian-vs-Lagrangian-Duality|Barbiero symmetries]] currently asserted in [[CTPC-Design-Rationale]] Part III.
+CBM is the **architectural mechanism for verifying TWO of the four [[Actionable-Interpretability-Symmetries|Barbiero]] symmetries** in PhyArch-CTPC — concept-closure invariance (Symmetry 3, paper §2.3.1) AND information invariance (Symmetry 2, because the k-dim bottleneck IS the compressed sufficient statistic Z). One architectural mechanism, two symmetry guarantees.
 
 The composition is concrete: insert a CBM layer between the Latent NCDE decoder hidden state `z_d(t)` and the prediction head, with named orbital-physics concepts (J2, drag, SRP, third-body, RTN-frame components). See [[CBM-CTPC-Composition]] for the full design.
 
