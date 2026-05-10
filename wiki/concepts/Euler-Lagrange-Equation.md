@@ -102,7 +102,7 @@ The Euler-Lagrange equation is the **mathematical object that makes [[Lagrangian
 ```
 d/dt(∂L/∂q̇) − ∂L/∂q + ∂D/∂q̇ = 0
 ```
-where `D(q̇)` is the *Rayleigh dissipation function*. This is the Lagrangian counterpart to [[Port-Hamiltonian-Neural-Networks]]'s explicit dissipation operator — the symmetric extension for friction/drag/SRP in CTPC.
+where `D(q̇)` is the *Rayleigh dissipation function*. This is the Lagrangian counterpart to [[Port-Hamiltonian-Neural-Network]]'s explicit dissipation operator — the symmetric extension for friction/drag/SRP in CTPC.
 
 ## Connections
 

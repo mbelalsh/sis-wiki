@@ -1,7 +1,7 @@
 ---
 title: CTPC Design Rationale (Decisions Made + Decisions Deferred to PhyArch-CTPC)
-tags: [ctpc, sis-design, design-rationale, phyarch, synthesis, research-roadmap, afrl, actionable-interpretability, barbiero-symmetries]
-sources: [raw/papers/my-papers/KDD_submission.pdf, raw/notes/PhyArch_DoublePendulum.pdf, raw/papers/interpretability/Interpretability&Symmetry.pdf, raw/papers/interpretability/ConceptBottleneckModels.pdf, raw/papers/uncertainty-propagation/AnalyticUncertaintyProp.pdf]
+tags: [ctpc, sis-design, design-rationale, phyarch, synthesis, research-roadmap, afrl, actionable-interpretability, barbiero-symmetries, dissipation-route]
+sources: [raw/papers/my-papers/KDD_submission.pdf, raw/notes/PhyArch_DoublePendulum.pdf, raw/papers/interpretability/Interpretability&Symmetry.pdf, raw/papers/interpretability/ConceptBottleneckModels.pdf, raw/papers/uncertainty-propagation/AnalyticUncertaintyProp.pdf, raw/papers/port-hamiltonian/DissipativeHNN.pdf, raw/papers/port-hamiltonian/DissipativeSymODEN-Zhong2020.pdf]
 created: 2026-05-09
 updated: 2026-05-10
 sis_relevance: critical
@@ -272,7 +272,82 @@ KDD paper limitations explicitly call this out as a needed downstream evaluation
 - **Dissipative residual layer:** PHNN-style for drag/SRP/atmospheric heating.
 - **Probabilistic head:** Latent NCDE Corrector for uncertainty quantification.
 
-Each layer hardwires a different aspect of the physics. The architectural composition is open until [[Port-Hamiltonian-Neural-Networks]] is ingested. Once it is, **PhyArch-CTPC + PHNN composition** becomes the natural next paper.
+Each layer hardwires a different aspect of the physics.
+
+**Q8 splits into three independently-tractable sub-questions** (split formalized 2026-05-10 after [[D-HNN]] and [[Dissipative-SymODEN]] ingests):
+
+### Q8a. Helmholtz-decomposition route to dissipative HNN — *closed by D-HNN ingest 2026-05-10*
+
+**Closed by:** [[D-HNN]] (Sosanya & Greydanus 2022). Architecture: two scalar subnetworks `H_θ(q,p)` + `D_θ(q,p)` combined via Helmholtz decomposition (`dx/dt = symplectic_grad(H) + grad(D)`).
+
+**What this gives CTPC:**
+
+- Structurally complete decomposition (any smooth field decomposes uniquely into the two components).
+- Counterfactual generalization for free: multiplying `D_θ` by a scalar `α` simulates a different friction coefficient *without retraining*. This is the architectural template for dissipation-side concept-closure compliance — see § "Architectural Hook for Dissipation-Side Concept-Closure (D-HNN template)" in Part III below.
+- Empirical validation (~4 orders of magnitude better than HNN on damped spring; positive results on real damped pendulum + ocean currents).
+
+**What this does NOT give CTPC** — and why Q8b is needed: D-HNN does **not** structurally guarantee `Ḣ ≤ 0`. The energy rate `dH/dt = ∇H · ∇D` along D-HNN dynamics has indeterminate sign because the two scalars are unconstrained relative to each other. For SiS deployment safety, this is insufficient — see [[Dissipative-Hamiltonian-Neural-Network]] § "Why D-HNN is not enough for SiS" for the precise architectural analysis.
+
+### Q8b-vector-field. J-R-structured route at continuous-time — *closed by Dissipative SymODEN ingest 2026-05-10*
+
+**Closed by:** [[Dissipative-SymODEN]] (Zhong, Dey, Chakraborty 2020). Architecture: four neural networks `(M⁻¹_θ1, V_θ2, D_θ4, g_θ3)` parameterizing a port-Hamiltonian form `dx/dt = (J − D(q))∇H + g(q)u` with the restricted Hamiltonian `H = ½ pᵀ M⁻¹(q) p + V(q)`. **The load-bearing primitive: Cholesky parameterization** of `D = LLᵀ` makes the dissipation matrix PSD-by-construction. Energy rate is `dH/dt = −∇HᵀD∇H ≤ 0` *structurally* — passivity is built into the algebraic form, not learned. See [[Port-Hamiltonian-Neural-Network]] for the SiS-canonical architectural treatment.
+
+**Why this is a structural match for orbital, not a compromise.** Dissipative SymODEN restricts the Hamiltonian to the *mechanical form* `H = ½ pᵀ M⁻¹(q) p + V(q)` — the same restriction LNN explicitly criticized DeLaN for. **For orbital dynamics, this restriction is exactly what physics already provides:**
+
+```
+H_orbital = |p|²/(2m) + V_J2(r) + V_J3(r) + V_3body(r) + V_SRP(r) + ...
+```
+
+The kinetic energy is exactly quadratic in `p`; perturbations enter through `V(q)` (potential) or `D(q)` (drag dissipation) — never through non-quadratic `T(p)` terms. **Dissipative SymODEN's mechanical-form restriction is therefore a structural match for SiS, not a compromise.** The architecture matches orbital physics; expressivity is not sacrificed for the orbital domain. (For a relativistic GEO-precision regime where `p ≠ m·q̇`, the LNN-side analog would be needed instead — see [[Hamiltonian-vs-Lagrangian-Duality]].)
+
+**Native control-input channel `g(q)u` — forward-looking asset.** The architecture supports an external control input via `g_θ3(q) u`. **For current CTPC, set `u = 0`** (no actuator commands during the prediction window). For a future SiS extension to integrated maneuver planning (joint state forecasting + Δv recommendation), the `u` channel is exactly the right architectural slot for thrust / Δv commands. This is a free asset banked into the architecture, not a current need.
+
+### Q8b-discrete-time. Exact discrete passivity — *open; needs structure-preserving integrator*
+
+**The remaining gap.** Dissipative SymODEN uses **RK4** as its numerical integrator, *not* a structure-preserving integrator. Despite the name "SymODEN", the symplectic structure is in the *vector field form*, not the integrator. Consequence: the `Ḣ ≤ 0` guarantee derived above holds at the level of the continuous-time port-Hamiltonian ODE; the discrete RK4 trajectory only satisfies it *approximately* — accurate to RK4's `O(Δt⁴)` truncation error per step.
+
+For SiS deployment-safety claims, the architectural `Ḣ ≤ 0` guarantee is real *up to integrator error*. For a structurally-exact discrete passivity guarantee, three candidate structure-preserving integrators are flagged in [[Port-Hamiltonian-Neural-Network]] § "Integrator Caveat" as concrete next-stage targets:
+
+- **Discrete gradient method** (Gonzalez 1996; McLachlan-Quispel-Robidoux 1999) — replaces `∇H` with a discrete-gradient operator that preserves the energy/dissipation balance exactly at the discrete level.
+- **Average-Vector-Field (AVF) method** (Quispel-McLaren 2008) — second-order energy-preserving integrator; extended versions handle dissipation.
+- **Gauss-collocation methods** (s-stage Gauss-Legendre) — implicit Runge-Kutta that is symplectic for Hamiltonian systems with substantially smaller energy drift than explicit methods on dissipative perturbations.
+
+**Status:** Open until follow-up ingest of any of the three. When that happens, this section becomes the resolution point.
+
+### Composition with the rest of CTPC (Q8a and Q8b)
+
+Both routes plug into the Latent NCDE decoder's vector field `f_θ_d(z_d)`. The composition gateway is the same as Q1 (PhyArch composition). The architectural difference between routes is *internal* to the dissipation block, not at the composition interface.
+
+Three-axis design space for the corrector (see [[Hamiltonian-vs-Lagrangian-Duality]] § "A Fourth Axis: Dissipation Route" for the full treatment):
+
+| Axis | Choices | What it controls |
+|---|---|---|
+| Conservative formalism | HNN / LNN | Which scalar (`H` or `L`) to parameterize |
+| Symmetry hardwiring | PhyArch / no | Whether spatial symmetries are baked into architecture |
+| Dissipation route | Helmholtz / J-R | Whether dissipation is added via second scalar (Q8a route) or via PSD damping matrix (Q8b route) |
+
+**The principled triple for SiS is `(HNN, PhyArch, J-R)`.** HNN-side conservative core (orbital is canonical, mechanical-form Hamiltonian fits exactly); PhyArch hardwiring of spatial symmetries inside the four port-Hamiltonian networks; J-R route via Dissipative-SymODEN-style Cholesky parameterization for `Ḣ ≤ 0`. **PhyArch-CTPC + PHNN-proper composition** is now the natural next paper — both architectural pieces are ingested, the composition is the open implementation work.
+
+**Composition with PhyArch.** PhyArch hardwires *spatial symmetries* (parity-split, geometric features) — independent of the dissipation route. PhyArch + J-R route gives:
+- Spatial symmetries from PhyArch (forced).
+- `Ḣ ≤ 0` from J-R structure (forced).
+- Conservation of `H` from the `(J − R)∇H` form (forced when `R = 0`).
+
+This is the principled hardwiring stack for an orbital corrector.
+
+### Composition with the rest of CTPC (both Q8a and Q8b)
+
+Both routes plug into the Latent NCDE decoder's vector field `f_θ_d(z_d)`. The composition gateway is the same as Q1 (PhyArch composition). The architectural difference between routes is *internal* to the dissipation block, not at the composition interface.
+
+Three-axis design space for the corrector (see [[Hamiltonian-vs-Lagrangian-Duality]] § "A Fourth Axis: Dissipation Route" for the full treatment):
+
+| Axis | Choices | What it controls |
+|---|---|---|
+| Conservative formalism | HNN / LNN | Which scalar (`H` or `L`) to parameterize |
+| Symmetry hardwiring | PhyArch / no | Whether spatial symmetries are baked into architecture |
+| Dissipation route | Helmholtz / J-R | Whether dissipation is added via second scalar (Q8a route) or via PSD damping matrix (Q8b route) |
+
+**The principled triple for SiS is `(LNN-or-HNN, PhyArch, J-R)`.** LNN-vs-HNN driven by coordinate frame; J-R driven by deployment-safety.
 
 ---
 
@@ -354,6 +429,51 @@ PhyArch's manipulator-equation skeleton matches the user's mental model when the
 | Information invariance | NOT YET | ✓ | ✓ | CBM bottleneck (k=9 compressed Z) |
 | Concept-closure invariance | NOT YET | ✓ | ✓ | CBM concept layer |
 | Structural invariance | ✓ for physics user | ✓ contingent on head commitment | ✓ contingent on head commitment | PhyArch manipulator-skeleton + structurally-committed head |
+
+## Architectural Hook for Dissipation-Side Concept-Closure (D-HNN Template)
+
+> **Design insight, not just a paper observation.** Surfaced 2026-05-10 during [[D-HNN]] ingest. **Architectural decomposition of dynamics into scalar fields gives a free hook for counterfactual interventions on the parameters of those scalar fields.** This is a design-level statement about *how* CTPC will satisfy concept-closure compliance on the *dissipation side* — independent of whether the implementation uses D-HNN's Helmholtz route (Q8a) or PHNN-proper's J-R route (Q8b).
+
+### The mechanism (D-HNN as the worked example)
+
+[[D-HNN]] trains two scalar subnetworks `(H_θ, D_θ)` jointly. At inference, replacing `D_θ → α · D_θ` simulates dynamics under a counterfactual friction coefficient — *without retraining*. The model only ever saw one friction coefficient during training but recovers the full one-parameter family ([[D-HNN]] Fig. 3). The conservative `H_θ` is untouched, so the conservative dynamics remain correctly modeled under the counterfactual.
+
+### Why this counts as concept-closure compliance under [[Actionable-Interpretability-Symmetries|Barbiero et al. 2026]]
+
+Concept-closure invariance (paper §2.3) requires sound translation between concept vocabularies — `τ_C : T → T'` is sound if for any pair of concepts `C = (T, M)` and `C' = (T', M)` (same underlying object set), the closure diagram commutes. The dissipation-coefficient concept space is exactly this kind of structure: two named concepts (`friction`, `α · friction`) refer to the same underlying physical object (the dissipation force field) related by a multiplicative scaling. **The architecture supports the translation by construction** — `α · D_θ` produces dynamics consistent with the rescaled physical reality, not just a numerical perturbation.
+
+Critically, this is *cleaner* than concept-closure via the [[CBM-CTPC-Composition]] k=9 concept bottleneck for *parametric* concepts. The CBM bottleneck enforces concept-closure on *categorical* concepts (J2 vs J3 vs drag vs SRP — discrete physical mechanisms); D-HNN's `α`-scaling enforces it on *parametric* concepts (the magnitude of a fixed mechanism). They are *complementary*, not redundant.
+
+### The transferable design template
+
+The Helmholtz-route is one realization. The same architectural pattern transfers to the J-R route (Q8b-vector-field, now closed by [[Dissipative-SymODEN]]):
+
+**General principle:** parameterize each *individually-interpretable* dissipation channel as a *separate* PSD operator inside `D(q)`:
+```
+D(q) = α_drag · D_drag(q) + α_SRP · D_SRP(q) + α_thermal · D_thermal(q) + ...
+```
+with each `D_i(q) = L_i Lᵢᵀ` Cholesky-PSD-parameterized (per Dissipative SymODEN §3.5) and each `α_i` a learnable scalar magnitude. At inference, intervening on `α_drag` or `α_SRP` independently simulates counterfactual environments — same `α`-scaling mechanism, but applied to PSD operators rather than to a free scalar `D_θ`.
+
+This preserves:
+- **Q8b-vector-field's `Ḣ ≤ 0` guarantee** (sum of PSD matrices is PSD; Cholesky factors compose cleanly).
+- **D-HNN's counterfactual-intervention hook** (each `α_i` is independently scalable).
+- **CBM-CTPC's named-concept semantics** (each `D_i` is the concept "`drag`", "`SRP`", "`thermal`" — a decomposition that aligns with the k=9 concept set).
+
+**Realizability check (post-Dissipative-SymODEN ingest 2026-05-10).** [[Dissipative-SymODEN]] uses a *single* Cholesky-PSD `D_θ4(q)` matrix. The channel-decomposed extension above is a *straightforward generalization* — sum of Cholesky-PSD matrices is PSD, training adds one parameter per channel for the `α_i` scalars (or per-channel PSD constraint via separate Cholesky factors). **The extension is concrete and implementable** as a Year 1 architectural commitment; it does not require additional theory.
+
+### Implication for the CTPC architecture
+
+**For Year 1 (CBM-CTPC, [[CBM-CTPC-Composition]]):** the prediction head `f: ĉ → ŷ` decomposes into per-concept dissipation operators. The Year 1 implementation should *not* use a monolithic `R(x)` — it should use the channel-decomposed form so that the CBM concept layer's interventions on individual concepts (e.g., `c_drag = 0` to ablate drag) translate cleanly into architectural interventions on the corresponding `R_drag` term.
+
+**For Year 2 (Analytic-Σ-CTPC, [[Analytic-Sigma-CTPC-Composition]]):** the analytic moment-propagation result transfers per-channel — propagating `Σ` through `R(x) = Σ_i α_i R_i(x)` is just the linear superposition of per-channel propagation, since `R` enters the dynamics linearly.
+
+**For Year 3+ (formal verification):** each `R_i` being PSD-by-parameterization is a *machine-checkable* algebraic property. The intervention semantics (`α_i · R_i` simulates `α_i`-scaled `i`-th dissipation) is also machine-checkable. The Q8b architecture composed with channel decomposition is a strong candidate for the formal-verification target ([[CTPC-Design-Rationale]] Part II Q5).
+
+### Status
+
+**Open design decision — deferred to Year 1 implementation.** Whether each individual `R_i` is parameterized as full Cholesky, low-rank-plus-diagonal, or block-structured is an implementation choice driven by the d-dimension scaling. Flagged for Year 1 architecture review. The *insight* (channel-decomposed `R(x)` for free counterfactual interventions) is the design commitment; the *parameterization* of each channel is the implementation detail.
+
+This is the kind of architectural decision that goes in [[CBM-CTPC-Composition]] § Open Design Decisions alongside the prediction-head structural commitment (linear / monotonic / manipulator-skeleton).
 
 ## Two-Year Research Arc (corrected after Barbiero ingest)
 
@@ -479,10 +599,16 @@ PhyArch + CBM-CTPC is *gap-filling for that exact deficit*: combining CBM's conc
 - [[Latent-NCDE-Corrector]] — the architectural backbone of CTPC
 - [[Neural-Controlled-Differential-Equation]] — the temporal substrate
 - [[Hamiltonian-Mechanics]] — foundational physics for the predictor side
-- [[Hamiltonian-vs-Lagrangian-Duality]] — sister synthesis page on the Hamiltonian↔Lagrangian axis
+- [[Hamiltonian-vs-Lagrangian-Duality]] — sister synthesis page on the Hamiltonian↔Lagrangian axis (now also covers the Helmholtz-vs-J-R dissipation-route axis)
 - [[PeRCNN]] — sibling Predictor-Corrector decomposition for spatial PDEs
 - [[Pi-Block-Polynomial-Approximator]] — alternative inductive-bias architecture (polynomial form vs. PhyArch's symmetry hardwiring)
-- [[Port-Hamiltonian-Neural-Networks]] *(not yet ingested)* — needed to close Q8 (HNN/LNN/PHNN integration)
+- [[D-HNN]] — Sosanya & Greydanus 2022; closes Q8a (Helmholtz route) and supplies the architectural template for dissipation-side concept-closure compliance. Ingested 2026-05-10.
+- [[Dissipative-Hamiltonian-Neural-Network]] — D-HNN architecture pattern; § "Why D-HNN is not enough for SiS" is the precise architectural analysis behind the Q8a/Q8b split.
+- [[Dissipative-SymODEN]] — Zhong, Dey, Chakraborty 2020; closes Q8b-vector-field via Cholesky-PSD parameterization of the dissipation matrix. Ingested 2026-05-10.
+- [[Port-Hamiltonian-Neural-Network]] — the SiS-canonical dissipative block (architecture pattern from Dissipative SymODEN, separated from the paper's experiments); contains the Integrator Caveat naming Q8b-discrete-time candidate integrators.
+- [[Port-Hamiltonian-Systems]] — math/physics foundation for the J-R route.
+- [[Helmholtz-Decomposition]] — math foundation of the Q8a route.
+- [[Rayleigh-Dissipation-Function]] — classical-mechanics primitive that both routes generalize.
 - [[Concept-Bottleneck-Models]] — Koh et al. ICML 2020; mechanism for verifying concept-closure invariance (Part III). Ingested 2026-05-09.
 - [[CBM-CTPC-Composition]] — concrete Year 1 milestone design applying CBM to the Latent NCDE Corrector with orbital-physics concepts. Created 2026-05-09.
 - [[Analytic-Covariance-Propagation]] — Wright et al. AISTATS 2024; technical machinery for full-distribution information invariance. Ingested 2026-05-09.
@@ -495,4 +621,6 @@ PhyArch + CBM-CTPC is *gap-filling for that exact deficit*: combining CBM's conc
 - `raw/papers/interpretability/Interpretability&Symmetry.pdf` — Barbiero et al. 2026, the four-symmetry framework for actionable interpretability. **Not yet ingested as a separate wiki page**; framework summarized in Part III from Bilal's reading. Promote to canonical source treatment on next ingest.
 - `raw/papers/interpretability/ConceptBottleneckModels.pdf` — Koh et al. ICML 2020. The mechanism for empirically verifying concept-closure invariance. Ingested 2026-05-09; see [[Concept-Bottleneck-Models]] and [[CBM-CTPC-Composition]] for the full treatment.
 - `raw/papers/uncertainty-propagation/AnalyticUncertaintyProp.pdf` — Wright et al. AISTATS 2024. The technical machinery for analytic moment propagation through neural networks; underpins the Year 2 milestone for verifying information invariance on the full predictive distribution. Ingested 2026-05-09; see [[Analytic-Covariance-Propagation]] and [[Analytic-Sigma-CTPC-Composition]] for the full treatment.
+- `raw/papers/port-hamiltonian/DissipativeHNN.pdf` — Sosanya & Greydanus 2022. Closes Q8a (Helmholtz-decomposition route to dissipative HNN); supplies the `α · D_θ` counterfactual-intervention template elevated in Part III as "Architectural Hook for Dissipation-Side Concept-Closure". Does *not* close Q8b (the J-R-structure route required by SiS `Ḣ ≤ 0`). Ingested 2026-05-10; see [[D-HNN]] and [[Dissipative-Hamiltonian-Neural-Network]] for the full treatment.
+- `raw/papers/port-hamiltonian/DissipativeSymODEN-Zhong2020.pdf` — Zhong, Dey, Chakraborty 2020 (ICLR Workshop). Closes Q8b-vector-field via Cholesky-PSD parameterization of the dissipation matrix (`D = LLᵀ`); restricted Hamiltonian `½ pᵀ M⁻¹(q) p + V(q)` is a structural match for orbital, not a compromise; native control-input channel `g(q)u` as a forward-looking asset for future maneuver-planning extensions. Q8b-discrete-time still open (paper uses RK4, not a structure-preserving integrator). Ingested 2026-05-10; see [[Dissipative-SymODEN]] and [[Port-Hamiltonian-Neural-Network]] for the full treatment, including the Integrator Caveat with three candidate integrators (discrete gradient method, AVF, Gauss-collocation).
 - `CLAUDE.md` § Core Philosophy — the SiS design hierarchy that this page operationalizes.

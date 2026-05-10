@@ -93,7 +93,7 @@ See [[Hamiltonian-vs-Lagrangian-Duality]] for the full HNN-vs-LNN-for-CTPC decis
 - [[Euler-Lagrange-Equation]] — math object behind the forward dynamics
 - [[Hamiltonian-vs-Lagrangian-Duality]] — synthesis with HNN
 - [[Hamiltonian-Neural-Network]] — Hamiltonian counterpart
-- [[Port-Hamiltonian-Neural-Networks]] *(not yet ingested)* — dissipative extension on the Hamiltonian side; Lagrangian counterpart uses Rayleigh dissipation
+- [[Port-Hamiltonian-Neural-Network]] — dissipative extension on the Hamiltonian side; Lagrangian counterpart uses Rayleigh dissipation
 - [[PeRCNN]] — physics-as-architecture sibling for spatial PDEs
 - [[PhyArch]] — orthogonal physics-as-architecture sibling: hardwires *spatial symmetries* (parity, periodicity) instead of energy formalism. The two are complementary, not competing.
 

@@ -92,7 +92,12 @@ Specifically for CTPC:
 - **Liouville's theorem gives free reversibility** — propagating an orbit forward and integrating back is bijective. Useful for orbit determination (recover epoch state from observations).
 - **The Riemann-gradient counterfactual** (Sec. 6, Fig. 5) is a clean way to ask "what if we applied Δv?" — a maneuver-simulation primitive that doesn't require retraining.
 
-**Critical limitation: HNN cannot represent dissipation.** Real pendulum (Task 3) is Hamiltonian + friction; HNN over-conserves energy because conservation is its inductive bias. For atmospheric drag, SRP, and any non-conservative perturbation, you need [[Port-Hamiltonian-Neural-Networks]] (the dissipative extension). The SiS dissipation constraint `Ḣ ≤ 0` requires PHNN, not pure HNN.
+**Critical limitation: HNN cannot represent dissipation.** Real pendulum (Task 3) is Hamiltonian + friction; HNN over-conserves energy because conservation is its inductive bias. **Two architectural routes extend HNN to dissipative dynamics**, and they make different trade-offs — see [[Hamiltonian-vs-Lagrangian-Duality]] § "A Fourth Axis: Dissipation Route":
+
+- **Helmholtz route — [[D-HNN]]** (Sosanya & Greydanus 2022; same Greydanus). Adds a second scalar `D_θ`; combines via [[Helmholtz-Decomposition]]. Empirically beats HNN by ~4 orders of magnitude on damped-spring task. Limitation: does *not* structurally guarantee `Ḣ ≤ 0`.
+- **J-R-structure route — [[Port-Hamiltonian-Neural-Network]]** (Dissipative SymODEN; Zhong, Dey, Chakraborty 2020; ingested 2026-05-10). Uses `(J − R)∇H` form with PSD `R` via Cholesky parameterization. Structural `Ḣ ≤ 0` guarantee at the vector-field level (RK4 caveat for discrete time).
+
+The SiS dissipation constraint `Ḣ ≤ 0` requires the J-R route, not the Helmholtz route — see [[Dissipative-Hamiltonian-Neural-Network]] § "Why D-HNN is not enough for SiS" for the precise architectural analysis.
 
 ## Connections
 
@@ -100,14 +105,16 @@ Specifically for CTPC:
 - [[Hamiltonian-Mechanics]] — foundational physics theory
 - [[Symplectic-Gradient]] — the math object that produces Hamilton's equations
 - [[PeRCNN]] — sister physics-as-architecture paper for spatial PDE structure (this paper is the time-evolution analogue)
-- [[Port-Hamiltonian-Neural-Networks]] *(not yet ingested)* — adds dissipation to make this useful for friction / drag / SRP
+- [[D-HNN]] — Sosanya & Greydanus 2022; Helmholtz-route dissipative extension of HNN by the same Greydanus
+- [[Dissipative-Hamiltonian-Neural-Network]] — the D-HNN architecture pattern, separated from D-HNN paper's experiments
+- [[Port-Hamiltonian-Neural-Network]] — J-R-structure-route dissipative extension; gives `Ḣ ≤ 0` structurally
 - [[LNN]] — Lagrangian counterpart paper; co-authored by Greydanus
 - [[Lagrangian-Neural-Network]] — Lagrangian-side architecture; works in arbitrary (non-canonical) coordinates
-- [[Hamiltonian-vs-Lagrangian-Duality]] — synthesis: when to pick HNN vs LNN for CTPC
+- [[Hamiltonian-vs-Lagrangian-Duality]] — synthesis: when to pick HNN vs LNN for CTPC; also covers the Helmholtz-vs-J-R-route axis for adding dissipation
 
 ## Open Questions
 
-- **Dissipation gap.** Fundamental limitation explicitly acknowledged in §3.2: "we would need to model it separately from the HNN." Composing HNN with a dissipative residual (Port-Hamiltonian, Lyapunov-constrained) is the obvious next step but is non-trivial — the composition has to preserve the structural guarantee on the conservative part.
+- **Dissipation gap (substantially closed 2026-05-10 across both routes).** Fundamental limitation explicitly acknowledged in §3.2: "we would need to model it separately from the HNN." [[D-HNN]] (Sosanya & Greydanus 2022) closes the *Helmholtz-decomposition route* — empirically dominant over HNN on damped spring + real pendulum + ocean currents but *without* `Ḣ ≤ 0`. [[Dissipative-SymODEN]] (Zhong, Dey, Chakraborty 2020) closes the *J-R-structured route* via Cholesky-PSD parameterization of the dissipation matrix — gives `Ḣ ≤ 0` structurally at the vector-field level. **Q8 of [[CTPC-Design-Rationale]] now splits into Q8a (Helmholtz route — closed by D-HNN), Q8b-vector-field (J-R route at continuous-time — closed by Dissipative SymODEN), and Q8b-discrete-time (exact discrete passivity — open, needs structure-preserving integrator).**
 - **Non-canonical coordinates.** Pixel pendulum (Task 5) needs the auxiliary loss `‖z_p − (z_q^t − z_q^{t+1})‖²` (Eq. 7) to coerce the autoencoder latent space into canonical `(q,p)` form. Poisson-bracket structure isn't learned — it has to be enforced. Open question: can equivariant or symplectic-by-construction encoders eliminate this auxiliary loss?
 - **Chaotic systems.** Three-body (App. B) shows energy stability but trajectory divergence. For SDA N-body perturbations, HNN gives long-term `H` stability but not orbit stability. Whether this is "good enough" depends on downstream use (collision probability vs. exact ephemeris).
 - **Computational cost of gradient supervision.** Each forward needs an autograd pass; each backward goes through that gradient. ~2× cost vs. standard supervision. Tractable on a desktop CPU for these toys; budget question for production CTPC at SDA scale.

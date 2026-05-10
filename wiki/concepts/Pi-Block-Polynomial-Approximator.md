@@ -1,7 +1,7 @@
 ---
 title: Π-Block Polynomial Approximator
 tags: [universal-approximation, polynomial, multiplicative-network, interpretability, symbolic-extraction, physics-as-architecture]
-sources: [raw/papers/port-hamiltonian/EncodingPhysics.pdf]
+sources: [raw/papers/physics-informed/EncodingPhysics.pdf]
 created: 2026-05-08
 updated: 2026-05-08
 sis_relevance: high
@@ -24,7 +24,7 @@ The Π-block sets the function class to "multivariate polynomial" by constructio
 2. **Interpretability.** Trained weights yield an explicit polynomial in `u, ∇u, Δu, …` — extractable by SymPy with no symbolic regression search.
 3. **Scarce-data fit.** Polynomial inductive bias drastically narrows the hypothesis space, making optimization well-posed under noise and limited samples (PeRCNN beats ConvLSTM/ResNet/PDE-Net/DHPM on long-time extrapolation in this regime).
 
-This is `partial` for `hard_constraint_possible` because the polynomial-form prior is a hard *structural* constraint on the function class — but it's not a physics conservation law (energy, momentum). For dissipation/symplecticity you still need [[Port-Hamiltonian-Neural-Networks]] or similar.
+This is `partial` for `hard_constraint_possible` because the polynomial-form prior is a hard *structural* constraint on the function class — but it's not a physics conservation law (energy, momentum). For dissipation/symplecticity you still need [[Port-Hamiltonian-Neural-Network]] or similar.
 
 ## The Math
 
@@ -96,12 +96,13 @@ The Π-block is the candidate **architecture for the CTPC ML corrector** when th
 
 ## Open Questions
 
-- **⚠️ Cranmer thesis cross-link** (`raw/papers/port-hamiltonian/MCranmerPhDThesis.pdf`, not yet ingested). Cranmer's symbolic distillation extracts equations *post-hoc* from black-box NNs via genetic programming / sparse regression on intermediate features (e.g., "Discovering Symbolic Models from Deep Learning with Inductive Biases", NeurIPS 2020). The Π-block bakes polynomial form *in* during training; SymPy then reads the weights directly without searching. **Open synthesis question**: Are these orthogonal or two ends of the same spectrum?
+- **⚠️ Cranmer thesis cross-link** (`raw/papers/symbolic-physics/MCranmerPhDThesis.pdf`, not yet ingested). Cranmer's symbolic distillation extracts equations *post-hoc* from black-box NNs via genetic programming / sparse regression on intermediate features (e.g., "Discovering Symbolic Models from Deep Learning with Inductive Biases", NeurIPS 2020). The Π-block bakes polynomial form *in* during training; SymPy then reads the weights directly without searching. **Open synthesis question**: Are these orthogonal or two ends of the same spectrum?
   - Π-block = strong inductive bias up front, cheap symbolic readout
   - Cranmer = weak inductive bias up front, expensive symbolic search at the end
   - When does the Π-block's bias hurt (non-polynomial true `ℱ`)? When does Cranmer's freedom hurt (sample inefficiency, search variance)?
   - Hybrid: train black-box → Cranmer-distill to polynomial → re-train as Π-block initialization?
   - **Cranmer-thread update (2026-05-08):** [[LNN]] is co-authored by Cranmer and is itself a *strong-prior* approach (Lagrangian structure baked in). Its custom init scheme is even derived using *eureqa* (Cranmer's symbolic-regression tool) — a meta-application of his post-hoc toolkit to the up-front-prior side. So Cranmer's body of work spans both ends of the spectrum: he uses symbolic regression both as a *distillation* tool (post-hoc, the thesis line) and as a *meta-design* tool (up-front, the LNN init). The synthesis question now has a third axis: *who* uses symbolic regression *when in the pipeline*.
+  - **D-HNN update (2026-05-10):** [[D-HNN]] (Sosanya & Greydanus 2022) is now ingested. Cranmer is in the D-HNN acknowledgments ("Miles Cranmer ... prior collaborations and fruitful conversations that helped lay the groundwork"). The Greydanus-Cranmer collective spans HNN → LNN → D-HNN — three inductive-bias points reachable as different choices on the conservative/dissipative + Hamiltonian/Lagrangian axes. **For the symbolic-distillation thread specifically:** D-HNN's two scalar fields `(H_θ, D_θ)` are *both* candidate distillation targets — symbolic regression on a learned `H_θ` should recover the energy expression; symbolic regression on `D_θ` should recover the dissipation function. This doubles the symbolic-recovery surface vs. HNN. Whether the post-hoc Cranmer toolkit handles two-scalar-field decomposition cleanly (or whether the Helmholtz uniqueness gauge ambiguity in `D_θ` causes problems) is open until the Cranmer thesis is ingested.
   - **CBM update (2026-05-09):** [[Concept-Bottleneck-Models]] (Koh et al. ICML 2020) is now ingested. CBM occupies a *third* point in the interpretability pipeline distinct from both Π-block and Cranmer:
     - **Π-block** = up-front *function-class* restriction (polynomial form) + post-hoc *symbolic readout* (SymPy reads weights). Polynomial inductive bias.
     - **Cranmer post-hoc symbolic distillation** = no up-front restriction, expensive symbolic regression at the end. Free function class.
@@ -114,4 +115,4 @@ The Π-block is the candidate **architecture for the CTPC ML corrector** when th
 
 ## Sources
 
-- `raw/papers/port-hamiltonian/EncodingPhysics.pdf` — Eq. 8 (Π-block formula), Theorem 1 + Lemmas 1–3 (universal polynomial approximation), Eq. 5–6 (extracted symbolic forms for 3D Gray–Scott and 2D Burgers), Methods § "Universal polynomial approximation property".
+- `raw/papers/physics-informed/EncodingPhysics.pdf` — Eq. 8 (Π-block formula), Theorem 1 + Lemmas 1–3 (universal polynomial approximation), Eq. 5–6 (extracted symbolic forms for 3D Gray–Scott and 2D Burgers), Methods § "Universal polynomial approximation property".

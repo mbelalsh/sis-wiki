@@ -80,12 +80,15 @@ wiki-sis/
 │   │   └── ml-theory/
 │   ├── papers/
 │   │   ├── neural-odes/
-│   │   ├── geometric-dl/
-│   │   ├── port-hamiltonian/
-│   │   ├── interpretability/        ← HNN, LNN, GP, mech-interp, ML-for-orbits, CBM
-│   │   ├── uncertainty-propagation/ ← analytic moment propagation, Bayesian NN inference
-│   │   ├── formal-verification/     ← proof assistants, NN robustness verification
-│   │   ├── my-papers/               ← Bilal's own published/submitted papers (CTPC, etc.)
+│   │   ├── geometric-dl/             ← equivariant CNNs, group-equivariant nets, symmetry+generalization
+│   │   ├── port-hamiltonian/         ← strict PHNN, dissipative/Lyapunov-stable neural dynamics
+│   │   ├── physics-informed/         ← PINN-style + general PIML literature + PeRCNN (physics-encoded)
+│   │   ├── neural-operators/         ← operator learning (FNO variants, CNO, group-equivariant FNO)
+│   │   ├── symbolic-physics/         ← Cranmer thread: symbolic regression / physics-aware GNNs / interpretable orbital ML
+│   │   ├── interpretability/         ← HNN, LNN, GP, mech-interp, ML-for-orbits, CBM
+│   │   ├── uncertainty-propagation/  ← analytic moment propagation, Bayesian NN inference
+│   │   ├── formal-verification/      ← proof assistants, NN robustness verification
+│   │   ├── my-papers/                ← Bilal's own published/submitted papers (CTPC, etc.)
 │   │   └── sda/
 │   └── notes/                       ← informal notes, drafts, benchmark docs (e.g., PhyArch DP)
 ├── wiki/

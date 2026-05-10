@@ -46,6 +46,12 @@ dq/dt = ∂H/∂p     dp/dt = −∂H/∂q
 ```
 Hamilton's equations can be written as `df/dt = {f, H}` for any observable `f`. The bracket structure encodes the symplectic geometry of phase space.
 
+**Non-conservative extension via Rayleigh dissipation.** Real systems aren't conservative — friction, drag, atmospheric heating remove energy. The standard extension introduces a *second* scalar function, the [[Rayleigh-Dissipation-Function]] `D`, that contributes a dissipative force. Hamilton's equations modify to:
+```
+dq/dt = ∂H/∂p,        dp/dt = −∂H/∂q − ∂D/∂q̇
+```
+For quadratic Rayleigh `D = ½q̇ᵀRq̇` with PSD damping matrix `R`, energy decays as `dH/dt = −q̇ᵀRq̇ ≤ 0` — passivity is structural. This is the foundation for [[Port-Hamiltonian-Systems|port-Hamiltonian]] dynamics `dx/dt = (J − R)∇H + g(x)u` and its NN realization (PHNN-proper / DissipativeSymODEN). Two architectural routes for the corresponding NN (Helmholtz-decomposition vs J-R-structure) make different trade-offs — see [[Hamiltonian-vs-Lagrangian-Duality]] § "A Fourth Axis: Dissipation Route" and [[Dissipative-Hamiltonian-Neural-Network]] for the SiS-relevant analysis.
+
 ### Code Correspondence
 
 ```python
@@ -92,8 +98,11 @@ Hamiltonian mechanics is the **structural foundation** for SiS architectures tar
 - [[Hamiltonian-Neural-Network]] — the architecture that parameterizes `H` with a neural net
 - [[HNN]] — paper that introduced the NN parameterization
 - [[Lagrangian-Mechanics]] — Legendre-dual formulation; `L(q, q̇) = pq̇ − H(q,p)`
-- [[Hamiltonian-vs-Lagrangian-Duality]] — design-decision synthesis: when to use which formulation for CTPC
-- [[Port-Hamiltonian-Systems]] *(not yet ingested)* — dissipative extension `dx/dt = (J − R)∇H + Bu`
+- [[Rayleigh-Dissipation-Function]] — non-conservative extension via a second scalar function
+- [[Helmholtz-Decomposition]] — alternative way to add dissipation: decompose dynamics into rotational + irrotational components
+- [[Hamiltonian-vs-Lagrangian-Duality]] — design-decision synthesis: when to use which formulation for CTPC; § "A Fourth Axis: Dissipation Route" treats Helmholtz-vs-J-R for adding dissipation
+- [[Dissipative-Hamiltonian-Neural-Network]] — D-HNN; Helmholtz-route dissipative architecture (function-decomposition complete, no `Ḣ ≤ 0`)
+- [[Port-Hamiltonian-Systems]] — J-R-route dissipative extension `dx/dt = (J − R)∇H + Bu`; structural `Ḣ ≤ 0`; needed for SiS
 - [[CTPC-KDD-Submission]] — operational example: GMAT is a real-world Hamiltonian propagator (orbital mechanics is Hamiltonian + small dissipative perturbations); CTPC's Predictor-Corrector decomposition matches the Hamiltonian-core + dissipative-residual structural decomposition
 
 ## Open Questions

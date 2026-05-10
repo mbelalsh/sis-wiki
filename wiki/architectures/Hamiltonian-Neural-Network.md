@@ -94,16 +94,22 @@ This is the canonical pattern for **conservative-system corrector architectures*
 - **Composition with [[Physics-Based-FD-Convolutional-Layer]]-style frozen physics.** SGP4 = frozen Keplerian + perturbation predictor; HNN-corrector = learned residual on the conservative part. Decomposition: dynamics = SGP4 (frozen, hard physics) + HNN (learned conservative residual) + dissipation term (PHNN for drag/SRP).
 - **Reversibility for orbit determination.** Liouville's theorem gives bijective propagation → backward-integration is mathematically exact, useful for state estimation problems.
 
-**Hard limitation: pure HNN cannot model non-conservative effects.** Drag, SRP, atmospheric heating, third-body resonances with non-Hamiltonian dissipation — none fit into a pure HNN. The natural extension is [[Port-Hamiltonian-Neural-Networks]], which adds an explicit dissipation operator. The SiS dissipation constraint `Ḣ ≤ 0` requires PHNN, not HNN.
+**Hard limitation: pure HNN cannot model non-conservative effects.** Drag, SRP, atmospheric heating, third-body resonances with non-Hamiltonian dissipation — none fit into a pure HNN. **There are two architectural routes to add dissipation**, and they are *not* equivalent:
+
+- **Helmholtz route** — [[Dissipative-Hamiltonian-Neural-Network|D-HNN]] (Sosanya & Greydanus 2022). Adds a *second* scalar `D_θ(q,p)`; combines via `dx/dt = symplectic_grad(H) + grad(D)`. Architecturally complete (any smooth field decomposes this way) but **does NOT structurally guarantee `Ḣ ≤ 0`** — the energy rate `dH/dt = ∇H · ∇D` has indeterminate sign because the two scalars are unconstrained relative to each other.
+- **J-R-structure route** — [[Port-Hamiltonian-Neural-Network]] / DissipativeSymODEN. Uses port-Hamiltonian form `dx/dt = (J − R)∇H + g(x)u` with `R` constrained PSD. **Structurally guarantees `Ḣ = −∇HᵀR∇H ≤ 0`** (passivity).
+
+The SiS dissipation constraint `Ḣ ≤ 0` requires the J-R route, not the Helmholtz route. See [[Dissipative-Hamiltonian-Neural-Network]] § "Why D-HNN is not enough for SiS" for the precise architectural analysis.
 
 ## Connections
 
 - [[HNN]] — the introducing paper
 - [[Hamiltonian-Mechanics]] — foundational physics
 - [[Symplectic-Gradient]] — the math object that produces Hamilton's equations
-- [[Port-Hamiltonian-Neural-Networks]] *(not yet ingested)* — dissipative extension
+- [[Dissipative-Hamiltonian-Neural-Network]] — Helmholtz-route dissipative extension (D-HNN, Sosanya & Greydanus 2022); function-decomposition complete but no `Ḣ ≤ 0` guarantee
+- [[Port-Hamiltonian-Neural-Network]] — J-R-structure-route dissipative extension; gives `Ḣ ≤ 0` structurally; needed for SiS
 - [[Lagrangian-Neural-Network]] — Legendre-dual architecture (works with non-canonical coords)
-- [[Hamiltonian-vs-Lagrangian-Duality]] — synthesis: when to pick HNN vs LNN for CTPC
+- [[Hamiltonian-vs-Lagrangian-Duality]] — synthesis: when to pick HNN vs LNN for CTPC; also covers the Helmholtz-vs-J-R-route axis
 - [[PeRCNN]] — physics-as-architecture sibling for spatial PDEs
 
 ## Open Questions

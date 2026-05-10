@@ -1,7 +1,7 @@
 ---
 title: PeRCNN — Physics-Encoded Recurrent CNN
 tags: [physics-encoded-learning, pde-learning, reaction-diffusion, polynomial-nn, equation-discovery, hard-constraint]
-sources: [raw/papers/port-hamiltonian/EncodingPhysics.pdf]
+sources: [raw/papers/physics-informed/EncodingPhysics.pdf]
 created: 2026-05-08
 updated: 2026-05-08
 sis_relevance: high
@@ -117,5 +117,5 @@ PeRCNN does **not** enforce dissipation `Ḣ ≤ 0` — that's an energy/Lyapuno
 
 ## Sources
 
-- `raw/papers/port-hamiltonian/EncodingPhysics.pdf` — Rao et al., Nat. Mach. Intell. 5, 765–779 (2023). Equations (1)–(8), Theorem 1, Lemmas 1–3, Figs. 1–6, Extended Data Tables 1–3.
+- `raw/papers/physics-informed/EncodingPhysics.pdf` — Rao et al., Nat. Mach. Intell. 5, 765–779 (2023). Equations (1)–(8), Theorem 1, Lemmas 1–3, Figs. 1–6, Extended Data Tables 1–3.
 - Code: <https://github.com/isds-neu/PeRCNN>

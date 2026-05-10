@@ -1,7 +1,7 @@
 ---
 title: Physics-Based Padding for Boundary Conditions
 tags: [hard-constraint, boundary-conditions, padding, pde-learning, ghost-cells, physics-as-architecture]
-sources: [raw/papers/port-hamiltonian/EncodingPhysics.pdf]
+sources: [raw/papers/physics-informed/EncodingPhysics.pdf]
 created: 2026-05-08
 updated: 2026-05-08
 sis_relevance: medium
@@ -103,4 +103,4 @@ The general principle — **encode the constraint geometrically, don't penalize 
 
 ## Sources
 
-- `raw/papers/port-hamiltonian/EncodingPhysics.pdf` — Fig. 1b (BC encoding schematic), Methods § "Network architecture" final paragraph, Supplementary Note B.3 (full padding rules for Dirichlet/Neumann/Robin/periodic), Supplementary Note G (Neumann effectiveness demonstration).
+- `raw/papers/physics-informed/EncodingPhysics.pdf` — Fig. 1b (BC encoding schematic), Methods § "Network architecture" final paragraph, Supplementary Note B.3 (full padding rules for Dirichlet/Neumann/Robin/periodic), Supplementary Note G (Neumann effectiveness demonstration).

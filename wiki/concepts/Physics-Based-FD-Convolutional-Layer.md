@@ -1,7 +1,7 @@
 ---
 title: Physics-Based Finite-Difference Convolutional Layer
 tags: [hard-constraint, finite-difference, convolution, pde-learning, physics-as-architecture]
-sources: [raw/papers/port-hamiltonian/EncodingPhysics.pdf]
+sources: [raw/papers/physics-informed/EncodingPhysics.pdf]
 created: 2026-05-08
 updated: 2026-05-08
 sis_relevance: high
@@ -100,4 +100,4 @@ This is the canonical tool for **hard-encoding spatial differential operators** 
 
 ## Sources
 
-- `raw/papers/port-hamiltonian/EncodingPhysics.pdf` — Lemma 1 (proof that conv approximates any FD operator), Methods § "Network architecture", Fig. 1a (the short-cut connection schematic).
+- `raw/papers/physics-informed/EncodingPhysics.pdf` — Lemma 1 (proof that conv approximates any FD operator), Methods § "Network architecture", Fig. 1a (the short-cut connection schematic).

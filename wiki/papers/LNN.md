@@ -119,17 +119,20 @@ For CTPC specifically:
 - **Keplerian dynamics in equinoctial elements** (already canonical, ~quadratic KE): HNN may be cheaper.
 - **Relativistic GEO/cislunar precision** or unusual perturbations: LNN handles cases HNN can't.
 - **Position-velocity straight from TLE data**: LNN avoids the canonical-momentum construction step (TLE-derived `(r, v)` are *not* canonical under perturbed Hamiltonians).
-- **Dissipation gap is identical to HNN.** The Lagrangian dissipative extension is a *Rayleigh dissipation function* `D(q̇)` modifying Euler-Lagrange to `d/dt(∂L/∂q̇) − ∂L/∂q + ∂D/∂q̇ = 0`. Symmetric counterpart to [[Port-Hamiltonian-Neural-Networks]].
+- **Dissipation gap is identical to HNN; same two-route choice.** The Lagrangian dissipative extension uses a [[Rayleigh-Dissipation-Function]] `D(q̇)` modifying Euler-Lagrange to `d/dt(∂L/∂q̇) − ∂L/∂q + ∂D/∂q̇ = 0`. **The Hamiltonian-side now has [[D-HNN]] (Helmholtz route) and [[Port-Hamiltonian-Neural-Network]] (J-R route) as the two architectural realizations** — see [[Hamiltonian-vs-Lagrangian-Duality]] § "A Fourth Axis: Dissipation Route". The Lagrangian-side equivalent of D-HNN doesn't appear named in the literature; the equivalent of PHNN-proper is "Lagrangian + PSD-constrained Rayleigh" but isn't a named architecture either. Open territory.
 
 ## Connections
 
 - [[Lagrangian-Neural-Network]] — the architecture pattern, separable from this paper's experiments
 - [[Lagrangian-Mechanics]] — foundational physics
 - [[Euler-Lagrange-Equation]] — math object behind the forward dynamics
-- [[Hamiltonian-vs-Lagrangian-Duality]] — synthesis: when to use HNN vs LNN for CTPC
+- [[Rayleigh-Dissipation-Function]] — the Lagrangian-side dissipation primitive (modified Euler-Lagrange `d/dt(∂L/∂q̇) − ∂L/∂q + ∂D/∂q̇ = 0`)
+- [[Hamiltonian-vs-Lagrangian-Duality]] — synthesis: when to use HNN vs LNN for CTPC; also Helmholtz-vs-J-R dissipation routes
 - [[HNN]] — Hamiltonian counterpart; co-authored by Greydanus (also on this paper)
+- [[D-HNN]] — Sosanya & Greydanus 2022; Hamiltonian-side Helmholtz-route dissipative extension. Cranmer is in D-HNN's acknowledgments — same Greydanus-Cranmer collective
 - [[Hamiltonian-Neural-Network]] — sibling architecture
-- [[Port-Hamiltonian-Neural-Networks]] *(not yet ingested)* — dissipative extension on Hamiltonian side
+- [[Dissipative-Hamiltonian-Neural-Network]] — D-HNN architecture pattern; the Lagrangian-side analog isn't yet in the literature
+- [[Port-Hamiltonian-Neural-Network]] — J-R-route dissipative extension on Hamiltonian side
 - [[PeRCNN]] — physics-as-architecture sibling for spatial PDEs (LGN here is the Lagrangian PDE analogue)
 - [[Pi-Block-Polynomial-Approximator]] — Cranmer thread: LNN is Cranmer-authored *structured-prior* example; the *eureqa*-based init scheme here is a meta-application of his symbolic regression toolkit
 
@@ -150,7 +153,7 @@ The mechanism (Sec. 10.2 of the PhyArch source): LNN's "guarantee" is contingent
 - **Computational cost at SDA scale.** `O(d³)` Hessian inversion at every step. For `d ~ 6` (orbital state) free; for `d ~ 100+` (N-body), infeasible without graph sparsity. Whether this is a hard blocker for production CTPC depends on the actual `d`.
 - **Activation expressiveness.** Softplus's second derivative is bell-shaped and vanishes at extremes. May limit ability to represent Lagrangians with sharp features (e.g., relativistic kinetic energy near `q̇ → c`). Open whether other twice-differentiable activations (Mish, GELU) help.
 - **Variational integrator pairing.** Symplectic integrators preserve `H` for HNN; the Lagrangian analogue (Marsden-West discrete mechanics) preserves the discrete Euler-Lagrange equation exactly. Pairing LNN with variational integrators is unstudied here.
-- **Cranmer thread.** Same author on `MCranmerPhDThesis.pdf` (in `raw/papers/port-hamiltonian/`, *not yet ingested*) and the symbolic-distillation work flagged on the [[Pi-Block-Polynomial-Approximator]] page. LNN sits at the *structured-prior* end of Cranmer's philosophy; the thesis covers the *post-hoc symbolic distillation* end. Reading both should close the inductive-bias-spectrum synthesis.
+- **Cranmer thread.** Same author on `MCranmerPhDThesis.pdf` (in `raw/papers/symbolic-physics/`, *not yet ingested*) and the symbolic-distillation work flagged on the [[Pi-Block-Polynomial-Approximator]] page. LNN sits at the *structured-prior* end of Cranmer's philosophy; the thesis covers the *post-hoc symbolic distillation* end. Reading both should close the inductive-bias-spectrum synthesis.
 - **Init scheme empirical.** Custom σ values found by *eureqa*; no theoretical derivation. Robustness to architecture changes (depth/width beyond tested ranges) untested.
 - **Gauge equivalence.** `L` and `L + df/dt` give identical dynamics. The learned `L_θ` from LNN isn't unique — only the equivalence class matters. Open whether this gauge freedom helps or hurts optimization.
 
