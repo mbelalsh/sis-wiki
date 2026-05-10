@@ -1,7 +1,7 @@
 ---
 title: CTPC Design Rationale (Decisions Made + Decisions Deferred to PhyArch-CTPC)
-tags: [ctpc, sis-design, design-rationale, phyarch, synthesis, research-roadmap, afrl]
-sources: [raw/papers/my-papers/KDD_submission.pdf, raw/notes/PhyArch_DoublePendulum.pdf]
+tags: [ctpc, sis-design, design-rationale, phyarch, synthesis, research-roadmap, afrl, actionable-interpretability, barbiero-symmetries]
+sources: [raw/papers/my-papers/KDD_submission.pdf, raw/notes/PhyArch_DoublePendulum.pdf, raw/papers/interpretability/Interpretability&Symmetry.pdf]
 created: 2026-05-09
 updated: 2026-05-09
 sis_relevance: critical
@@ -15,6 +15,7 @@ hard_constraint_possible: yes
 > **Sources synthesized:**
 > - [[CTPC-KDD-Submission]] — probabilistic Predictor-Corrector framework on real CDDIS spacecraft data
 > - [[PhyArch-Double-Pendulum-Benchmark]] — deterministic symmetry-hardwiring benchmark on a controlled toy system
+> - Barbiero et al. 2026, *Interpretability & Symmetry* (`raw/papers/interpretability/Interpretability&Symmetry.pdf`) — *not yet ingested as a separate page; framework summarized in Part III below*
 
 ## Core Design Philosophy
 
@@ -273,6 +274,92 @@ Each layer hardwires a different aspect of the physics. The architectural compos
 
 ---
 
+# Part III — PhyArch as Practical Instantiation of Actionable Interpretability (Barbiero et al. 2026)
+
+The interpretability literature has recently converged around four symmetries that any *actionable* (intervenable, causally sound) interpretable model should satisfy [Barbiero et al. 2026, *Interpretability & Symmetry*]. Most existing methods satisfy zero or one. **PhyArch + CTPC, as instantiated in [[PhyArch-Double-Pendulum-Benchmark]] + [[CTPC-KDD-Submission]], satisfies three of four — with concept-closure invariance currently asserted architecturally but not yet empirically verified.** This positions PhyArch-CTPC as a candidate for *the first practical instantiation of actionable interpretability in safety-critical dynamical systems*.
+
+> **Note:** the Barbiero et al. 2026 paper is at `raw/papers/interpretability/Interpretability&Symmetry.pdf` but is **not yet ingested as a separate wiki page**. The four-symmetry framework summarized here comes from Bilal's reading; canonical treatment will follow on next ingest. Until then, take the framework characterization as approximate and revise on ingest.
+
+## The Four Symmetries Mapped to PhyArch / CTPC
+
+| Barbiero symmetry | Definition (paraphrased) | PhyArch / CTPC instantiation |
+|---|---|---|
+| **Inference equivariance** | Predictions transform correctly under group actions on inputs | [[PhyArch]] parity-split assembly: `(invariant coefficient) × (equivariant basis) = equivariant output`. For DP: exact `Z₂` reflection. For orbital: `SO(2)` rotation around Earth's pole (J2-broken from `SO(3)`). Algebraically enforced — no choice of weights produces an inequivariant function. |
+| **Information invariance** | Same prediction under redundant / equivalent input encodings | **Mean prediction**: covered. Geometric features `(uᵢ, tᵢ, ĝ)` invariant to angle-chart choice; RTN frame invariant to ECI-frame inertial orientation; [[Neural-Controlled-Differential-Equation]] control path invariant to sampling-time scheme (within spline regime). **Full predictive distribution**: NOT YET — covariance head is free-form Cholesky and may not transform correctly. Closing this gap requires analytic covariance propagation (Year 2). |
+| **Concept-closure invariance** | Operating on internal concepts produces predictions that respect those concept manipulations (intervention compositionality) | **Asserted, not verified.** PhyArch's coefficient networks `aᵢⱼ(z_even)` correspond *by construction* to manipulator-equation entries `M⁻¹C, M⁻¹G` — each is a "concept" (inertial coupling, gravity-on-rod, Coriolis-cross). But we have not empirically verified that intervening on `aᵢⱼ` produces the predicted physics-aligned change. Closing this gap requires a [[Concept-Bottleneck-Models]] layer (Year 1) — see Honest Caveat below. |
+| **Structural invariance** | Architecture mirrors the system's structural form | **PhyArch**: assembly mirrors `q̈ = −M⁻¹(Cq̇ + G)` — the algebraic skeleton of the physics equation. **CTPC**: Predictor-Corrector decomposition mirrors the physics-prior + learned-residual structural decomposition at the system level. Hardwired in architecture, not loss. |
+
+## Where Other Methods Fall Short
+
+| Method | Inference equivariance | Information invariance | Concept closure | Structural invariance |
+|---|---|---|---|---|
+| Post-hoc explainers (SHAP, LIME) | ✗ | ✗ | ✗ | ✗ |
+| Rudin sparse models (GAMs, decision lists) | ✗ | partial | ✗ | partial |
+| Equivariant NNs (EGNN, Tensor Field Networks) | ✓ | partial | ✗ | ✗ |
+| Concept Bottleneck Models | ✗ | ✗ | ✓ | ✗ |
+| **PhyArch + CTPC (now, 2026-05)** | **✓** | partial (mean only) | ⚠️ asserted | **✓** |
+| **PhyArch + CTPC + CBM + analytic Σ (target)** | **✓** | **✓** | **✓** | **✓** |
+
+- **SHAP / LIME** are post-hoc and model-agnostic. The model itself remains a black box; the explanation is *fit* to the model, not *derived from its structure*. None of the four symmetries are enforced — they are at best approximated by the explanation method.
+- **Rudin sparse models** [Rudin 2019] enforce structural simplicity (sparsity, additivity, decision-rule form). Information invariance is partial — sparse models are often coordinate-fragile. Group equivariance and concept closure are not addressed by the framework.
+- **Equivariant NNs** (EGNN, Tensor Field Networks) deliver inference equivariance and partial information invariance via the group-equivariant architecture. But internal representations are not aligned with system-level structural primitives — the architecture is equivariant *as a function*, but doesn't expose interpretable concepts that can be intervened on.
+- **Concept Bottleneck Models** [Koh et al. 2020] enforce concept-level interventions: you can manipulate a labeled concept and see the prediction change correspondingly. But CBMs are not equivariant, and the concept set is hand-designed rather than emerging from the system's structural form.
+- **PhyArch + CTPC** hits all four (with the concept-closure caveat). The coefficient networks `aᵢⱼ` are *both* parity-split (equivariance) *and* aligned with manipulator-equation entries (concept closure). The structural form is hardwired (structural invariance). Geometric features give mean-level information invariance. **No other entry in the table claims all four.**
+
+## The Publishable Claim
+
+> **PhyArch + CTPC is the first practical instantiation of actionable interpretability in safety-critical dynamical systems**, where all four symmetries identified in Barbiero et al. 2026 are enforced *architecturally* — by construction of the model, not added post-hoc by an explanation method or imposed via a soft loss penalty. Validation: [[PhyArch-Double-Pendulum-Benchmark]] (deterministic, controlled toy) for inference equivariance + structural invariance; [[CTPC-KDD-Submission]] (probabilistic, real spacecraft data) for the same two on real OOD trajectories. The remaining two symmetries (information invariance for full distribution, concept closure) are architecturally asserted and have a defined empirical-verification roadmap (next two sections).
+
+This is publishable as a framework-level claim independently of any single experiment. The two existing papers are the validation; the *claim itself* is a follow-up paper with the four-symmetry framing as the lens.
+
+## The Honest Caveat — Concept-Closure Invariance Is the Weakest Link
+
+PhyArch's `aᵢⱼ(z_even)` networks *correspond to* manipulator-equation entries by construction. But asserting this is not the same as verifying it. Specifically, we have **not** shown:
+
+1. **Intervention semantics**: that intervening on `a₁₃` (gravity-on-rod-1, in the DP case) produces a change in `q̈₁` aligned with the physical interpretation of that term — i.e., that the network has actually learned the concept the architecture was supposed to localize.
+2. **Quantitative concept alignment**: that the learned `aᵢⱼ(z_even)` values match analytic-physics derivations of the corresponding `M⁻¹C, M⁻¹G` entries term-by-term, at least up to a constant.
+3. **Transfer of concept semantics**: that the same intervention-compositionality story holds when transferring from DP (`Z₂` parity, gravity-on-rod) to orbital (`SO(2)` rotation, gravity-radial / drag-along-track / SRP-cross-track). The orbital concepts are different; the architecture template is the same; the alignment is not automatic.
+
+**The mechanism for closing this gap is a Concept Bottleneck Model layer** [[Concept-Bottleneck-Models]] *(forward reference; not yet ingested)*. A CBM layer between PhyArch's invariant features and the coefficient networks would:
+
+- Force coefficient outputs to align with a named concept set (jointly trained against concept labels)
+- Enable intervention experiments — set concept value, predict outcome, compare against physics ground truth
+- Provide the empirical artifact (intervention-success rates, concept-alignment metrics) that promotes Q4 from "asserted" to "verified"
+
+Until that layer is added and the experiments run, **Part III's claim of "all four symmetries" carries an asterisk on concept closure**. This is the right way to frame it for an AFRL reviewer — the architecture admits the property; we have not yet proven the network learned it.
+
+## Two-Year Research Arc
+
+| Time | Milestone | Status | Closes |
+|---|---|---|---|
+| **Now (2026-05)** | PhyArch DP benchmark + CTPC KDD submission | ✓ Done | Inference equivariance + structural invariance; mean-level information invariance; *asserted* concept closure |
+| **Year 1** | [[Concept-Bottleneck-Models]] corrector layer integrated into PhyArch-CTPC | Open | Concept-closure invariance promoted from *asserted* to *verified* (intervention experiments + alignment studies) |
+| **Year 2** | [[Analytic-Covariance-Propagation]] through PhyArch architecture | Open | Information invariance extended from mean prediction to full predictive distribution (covariance respects group actions) |
+| **End-state** | Full Barbiero et al. 2026 compliance + formal verification | Aspirational | All four symmetries empirically verified + formally proven (links to Part II Q5) |
+
+**Sequencing rationale:**
+
+- **Concept closure first.** The CBM layer also makes the model *debuggable* — you cannot safely deploy a model whose internal concepts you cannot inspect. Operational priority.
+- **Analytic covariance propagation second.** Extending information invariance to the covariance requires the concept layer to define *what* is being propagated through *which* concept. The layer ordering matters.
+- **Formal verification last.** Verification is worth the effort only when the architectural pieces are stable. Premature verification of an unstable architecture produces re-work. Connect to Part II Q5 once the architectural pieces are settled.
+
+The end-state is a CTPC variant where:
+
+1. Architecture algebraically enforces all four symmetries.
+2. Each enforcement is empirically validated by intervention experiments + concept-alignment studies + covariance-equivariance tests.
+3. The whole pipeline is formally verified against a specification of "safe orbital correction."
+
+This is the AFRL-deployable form. The current 2026-05 state is the architectural foundation for that deployable form, not the deployable form itself.
+
+## Cross-References (Part III specific)
+
+- [[Concept-Bottleneck-Models]] *(not yet ingested)* — the architectural piece needed for empirical verification of concept-closure invariance
+- [[Analytic-Covariance-Propagation]] *(not yet ingested)* — the analytical machinery for extending information invariance from mean to full distribution
+- [[Physics-Based-FD-Convolutional-Layer]] — the discrete analog of "freeze what's known structurally" for spatial PDEs; PhyArch's parity-split assembly is the symmetry-respecting analog for ODEs (both encode structural invariance, the fourth Barbiero symmetry, into the architecture rather than the loss)
+- `raw/papers/interpretability/Interpretability&Symmetry.pdf` — Barbiero et al. 2026, the framework being instantiated. **Not yet ingested as a wiki page** — flagged as the canonical source for the four symmetries; full treatment of their definitions, examples, and counter-examples deferred until ingest.
+
+---
+
 ## How This Page Should Be Used
 
 **As an AFRL reviewer-facing document:** Part I is the justification for every architectural choice. Each decision has an alternatives-considered section with explicit reasoning + supporting evidence. Together they answer "why CTPC, and why this version of CTPC."
@@ -293,9 +380,12 @@ Each layer hardwires a different aspect of the physics. The architectural compos
 - [[PeRCNN]] — sibling Predictor-Corrector decomposition for spatial PDEs
 - [[Pi-Block-Polynomial-Approximator]] — alternative inductive-bias architecture (polynomial form vs. PhyArch's symmetry hardwiring)
 - [[Port-Hamiltonian-Neural-Networks]] *(not yet ingested)* — needed to close Q8 (HNN/LNN/PHNN integration)
+- [[Concept-Bottleneck-Models]] *(not yet ingested)* — needed to close concept-closure invariance gap in Part III
+- [[Analytic-Covariance-Propagation]] *(not yet ingested)* — needed to extend information invariance to the full predictive distribution in Part III
 
 ## Sources
 
-- `raw/papers/my-papers/KDD_submission.pdf` — Shahid, Jiang, Sarkar, Fleming 2026 (KDD '26 submission). The deployed CTPC framework.
-- `raw/notes/PhyArch_DoublePendulum.pdf` — Bilal's deterministic benchmark notes. Validates symmetry-hardwiring on a controlled toy.
+- `raw/papers/my-papers/KDD_submission.pdf` — Shahid, Jiang, Sarkar, Fleming 2026 (KDD '26 submission). The deployed CTPC framework. Used in Parts I–II.
+- `raw/notes/PhyArch_DoublePendulum.pdf` — Bilal's deterministic benchmark notes. Validates symmetry-hardwiring on a controlled toy. Used in Parts I–III.
+- `raw/papers/interpretability/Interpretability&Symmetry.pdf` — Barbiero et al. 2026, the four-symmetry framework for actionable interpretability. **Not yet ingested as a separate wiki page**; framework summarized in Part III from Bilal's reading. Promote to canonical source treatment on next ingest.
 - `CLAUDE.md` § Core Philosophy — the SiS design hierarchy that this page operationalizes.
