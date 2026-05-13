@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Goldstein Ch 8 J-side vs Port-Hamiltonian Cholesky R-side</title>
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['$', '$'], ['\\(', '\\)']],
+    displayMath: [['$$', '$$'], ['\\[', '\\]']],
+    processEscapes: true,
+    tags: 'none'
+  },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.55;
+    max-width: 860px;
+    margin: 2em auto;
+    padding: 0 1.5em;
+    color: #222;
+    background: #fdfdfa;
+  }
+  h1, h2, h3 { color: #1a1a1a; line-height: 1.25; }
+  h1 { border-bottom: 2px solid #888; padding-bottom: 0.3em; }
+  h2 { border-bottom: 1px solid #ccc; padding-bottom: 0.2em; margin-top: 1.8em; }
+  h3 { margin-top: 1.4em; }
+  blockquote {
+    border-left: 3px solid #888;
+    background: #f5f5ee;
+    padding: 0.6em 1em;
+    margin: 1em 0;
+    color: #444;
+  }
+  code, pre {
+    font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
+    font-size: 0.92em;
+  }
+  code { background: #eee; padding: 0.1em 0.3em; border-radius: 3px; }
+  pre {
+    background: #f5f5ee;
+    border: 1px solid #ddd;
+    padding: 0.9em 1em;
+    border-radius: 4px;
+    overflow-x: auto;
+    line-height: 1.45;
+  }
+  pre code { background: transparent; padding: 0; }
+  table {
+    border-collapse: collapse;
+    margin: 1em 0;
+    width: 100%;
+    font-size: 0.95em;
+  }
+  th, td {
+    border: 1px solid #bbb;
+    padding: 0.5em 0.75em;
+    text-align: left;
+    vertical-align: top;
+  }
+  th { background: #eee; }
+  .frontmatter {
+    background: #f0f0e8;
+    border: 1px solid #ccc;
+    padding: 0.8em 1em;
+    margin-bottom: 1.5em;
+    font-size: 0.88em;
+    color: #555;
+    border-radius: 4px;
+  }
+  .frontmatter strong { color: #222; }
+  .verdict-box {
+    background: #eef6ff;
+    border-left: 4px solid #4a7fbd;
+    padding: 0.8em 1em;
+    margin: 1em 0;
+  }
+  a { color: #2a5d9f; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wikilink { color: #6d3a8a; }
+</style>
+</head>
+<body>
+
+<div class="frontmatter">
+<strong>title:</strong> Goldstein Ch 8 J-side vs Port-Hamiltonian Cholesky R-side<br>
+<strong>tags:</strong> synthesis, book-query, hamiltonian-mechanics, port-hamiltonian, cholesky, dissipation, j-r-structure, ctpc<br>
+<strong>sources:</strong> raw/books/classical-mechanics/GoldsteinPooleSafkoClassicalMechanics.pdf;
+wiki/architectures/Port-Hamiltonian-Neural-Network.md;
+wiki/concepts/Port-Hamiltonian-Systems.md;
+wiki/papers/Dissipative-SymODEN.md<br>
+<strong>created:</strong> 2026-05-13 &nbsp; | &nbsp; <strong>updated:</strong> 2026-05-13<br>
+<strong>sis_relevance:</strong> high &nbsp; | &nbsp; <strong>hard_constraint_possible:</strong> yes
+</div>
+
+<h1>Goldstein Ch 8 J-side vs Port-Hamiltonian Cholesky R-side</h1>
+
+<h2>One-Line Intuition</h2>
+<p>Goldstein Ch 8 establishes the <strong>J-side</strong> of the port-Hamiltonian
+$(\mathbf{J} - \mathbf{R})\nabla H$ structure <em>exactly</em>
+(Eq. 8.39: $\dot{\boldsymbol{\eta}} = \mathbf{J}\,\partial H / \partial \boldsymbol{\eta}$,
+with skew-symmetry proven at Eq. 8.38d). The <strong>R-side is outside Ch 8's
+scope</strong> — Ch 8 treats only monogenic forces. The Cholesky
+parameterization $\mathbf{R} = \mathbf{L} \mathbf{L}^\top$ used in CTPC's PHNN
+satisfies the PH R-side requirement
+($\mathbf{R} = \mathbf{R}^\top \succeq \mathbf{0}$) by linear algebra alone,
+with the canonical citation living in van der Schaft &amp; Jeltsema Ch 2 +
+Khalil Ch 6 — not in Goldstein.</p>
+
+<h2>The Question</h2>
+<p>CTPC's PHNN dissipation block uses $\mathbf{R} = \mathbf{L} \mathbf{L}^\top$
+(with $\mathbf{L}$ lower-triangular, softplus-positive diagonal) to make
+$\dot H = -\nabla H^\top \mathbf{R} \nabla H \leq 0$ a structural property — a
+hard architectural constraint per the SiS design hierarchy in CLAUDE.md. The
+book query: <strong>does this parameterization satisfy the port-Hamiltonian
+J-R structure</strong>, and <strong>how much of that consistency is citable to
+Goldstein Ch 8</strong>?</p>
+
+<h2>What Goldstein Ch 8 Directly Establishes (the J-side)</h2>
+
+<p>Goldstein sets up Hamilton's equations in symplectic / matrix notation.
+Define the stacked canonical state (Eq. 8.36, p. 342):</p>
+
+<blockquote>
+"$\eta_i = q_i, \quad \eta_{i+n} = p_i; \quad i \leq n$" — <strong>Eq. (8.36)</strong>
+</blockquote>
+
+<p>with gradient components (Eq. 8.37):</p>
+
+<blockquote>
+"$\left(\dfrac{\partial H}{\partial \boldsymbol{\eta}}\right)_i = \dfrac{\partial H}{\partial q_i}, \quad \left(\dfrac{\partial H}{\partial \boldsymbol{\eta}}\right)_{i+n} = \dfrac{\partial H}{\partial p_i}; \quad i \leq n$" — <strong>Eq. (8.37)</strong>
+</blockquote>
+
+<p>The <strong>symplectic structure matrix</strong> (Eq. 8.38a, p. 342):</p>
+
+$$\mathbf{J} = \begin{bmatrix} \mathbf{0} & \mathbf{1} \\ -\mathbf{1} & \mathbf{0} \end{bmatrix} \qquad \textbf{Eq. (8.38a)}$$
+
+<p>where each block is $n \times n$. Goldstein then proves four properties
+(Eqs. 8.38b–8.38f, p. 343):</p>
+
+$$\tilde{\mathbf{J}} = \begin{bmatrix} \mathbf{0} & -\mathbf{1} \\ \mathbf{1} & \mathbf{0} \end{bmatrix} \qquad \textbf{Eq. (8.38b)}$$
+
+$$\tilde{\mathbf{J}}\mathbf{J} = \mathbf{J}\tilde{\mathbf{J}} = \mathbf{1} \qquad \textbf{Eq. (8.38c)}$$
+
+$$\boxed{\;\tilde{\mathbf{J}} = -\mathbf{J} = \mathbf{J}^{-1}\;} \qquad \textbf{Eq. (8.38d)}$$
+
+$$\mathbf{J}^2 = -\mathbf{1} \qquad \textbf{Eq. (8.38e)}$$
+
+$$|\mathbf{J}| = +1 \qquad \textbf{Eq. (8.38f)}$$
+
+<p>Equation (8.38d) is <strong>exactly</strong> the skew-symmetry condition
+$\mathbf{J}^\top = -\mathbf{J}$ that port-Hamiltonian theory places on its
+$\mathbf{J}$ matrix.</p>
+
+<p>With this, Hamilton's equations compress to (Eq. 8.39, p. 343):</p>
+
+$$\boxed{\;\dot{\boldsymbol{\eta}} = \mathbf{J}\,\frac{\partial H}{\partial \boldsymbol{\eta}}\;} \qquad \textbf{Eq. (8.39)}$$
+
+<p>For two coordinate variables Goldstein expands this explicitly (Eq. 8.40,
+p. 343):</p>
+
+$$\begin{bmatrix} \dot{q}_1 \\ \dot{q}_2 \\ \dot{p}_1 \\ \dot{p}_2 \end{bmatrix} = \begin{bmatrix} 0 & 0 & 1 & 0 \\ 0 & 0 & 0 & 1 \\ -1 & 0 & 0 & 0 \\ 0 & -1 & 0 & 0 \end{bmatrix} \begin{bmatrix} -\dot{p}_1 \\ -\dot{p}_2 \\ \dot{q}_1 \\ \dot{q}_2 \end{bmatrix} \qquad \textbf{Eq. (8.40)}$$
+
+<div class="verdict-box">
+This is exactly the $\mathbf{J} \nabla H$ term in the port-Hamiltonian form
+$\dot{\mathbf{x}} = (\mathbf{J} - \mathbf{R}) \nabla H + \mathbf{g}(\mathbf{x})\mathbf{u}$
+when $\mathbf{R} = \mathbf{0}$. On the J-side, the structures coincide exactly.
+</div>
+
+<h2>What Goldstein Ch 8 Does NOT Establish (the R-side)</h2>
+
+<p><strong>Ch 8 contains no dissipation matrix.</strong> The chapter opener
+on p. 334 explicitly restricts scope:</p>
+
+<blockquote>
+"We shall assume in the following chapters that the mechanical systems are
+holonomic and that the forces are <em>monogenic</em>, that is, derived
+either from a potential dependent upon position only, or from velocity-dependent
+generalized potentials of the type discussed in Section 1.5."
+</blockquote>
+
+<p>The Rayleigh dissipation function lives in §1.5 of Ch 1, <strong>not</strong>
+in Ch 8. There is no equation in Ch 8 of the form
+$\dot{\mathbf{x}} = (\mathbf{J} - \mathbf{R}) \nabla H$; the closest is the
+conservation statement (Eq. 8.41, p. 344):</p>
+
+$$\frac{dH}{dt} = \frac{\partial H}{\partial t} = -\frac{\partial L}{\partial t} \qquad \textbf{Eq. (8.41)}$$
+
+<p>which says $H$ is conserved when $L$ is not explicitly time-dependent —
+i.e. precisely the <strong>lossless</strong> case. Port-Hamiltonian theory
+generalizes this to
+$dH/dt = -\nabla H^\top \mathbf{R} \nabla H \leq 0$ (strict dissipation when
+$\mathbf{R} \succ \mathbf{0}$), which is <strong>outside Ch 8's scope</strong>.</p>
+
+<p>So whether the Cholesky parameterization satisfies the <em>R-side
+requirement</em> ($\mathbf{R} = \mathbf{R}^\top \succeq \mathbf{0}$) cannot be
+read off Goldstein Ch 8 — Ch 8 doesn't discuss $\mathbf{R}$ at all.</p>
+
+<h2>The Cholesky Algebra (Independent of Goldstein)</h2>
+
+<p>Port-Hamiltonian theory (Port-Hamiltonian-Systems, van der Schaft &amp;
+Jeltsema Ch 2 — not yet ingested) requires
+$\mathbf{R} = \mathbf{R}^\top \succeq \mathbf{0}$ so that:</p>
+
+$$\dot H = -\nabla H^\top \mathbf{R} \nabla H \leq 0$$
+
+<p>structurally. The CTPC PHNN parameterizes $\mathbf{R}$ via Cholesky:
+$\mathbf{R} = \mathbf{L} \mathbf{L}^\top$ with $\mathbf{L}$ lower-triangular
+and strictly positive diagonal (typically via softplus).</p>
+
+<p>Two identities hold for <em>any</em> $\mathbf{L}$:</p>
+
+<p><strong>Symmetry:</strong></p>
+$$\mathbf{R}^\top = (\mathbf{L} \mathbf{L}^\top)^\top = \mathbf{L} \mathbf{L}^\top = \mathbf{R} \quad \checkmark$$
+
+<p><strong>Positive semi-definiteness:</strong> for any $\mathbf{v} \in \mathbb{R}^n$,</p>
+$$\mathbf{v}^\top \mathbf{R} \mathbf{v} = \mathbf{v}^\top \mathbf{L} \mathbf{L}^\top \mathbf{v} = \|\mathbf{L}^\top \mathbf{v}\|^2 \geq 0 \quad \checkmark$$
+
+<p>If $\mathbf{L}$ has strictly positive diagonal (softplus / exp), then
+$\mathbf{L}$ is invertible and $\mathbf{R}$ is <strong>positive definite</strong>
+(not just semidefinite), giving strict dissipation $\dot H < 0$ whenever
+$\nabla H \neq \mathbf{0}$.</p>
+
+<p>This is an <strong>algebraic identity at every parameter setting</strong> —
+not a learned property. It satisfies the SiS hard-constraint hierarchy
+(CLAUDE.md step 1) and inhabits the same logic as PINN-Challenges's
+SiS-connection table.</p>
+
+<h3>Code Correspondence</h3>
+
+<pre><code>import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+class CholeskyDissipation(nn.Module):
+    """R = L L^T with L lower-triangular, softplus-positive diagonal.
+    Guarantees R = R^T (symmetric) and R &gt; 0 (positive definite)
+    as algebraic identities at every parameter setting."""
+
+    def __init__(self, dim):
+        super().__init__()
+        # Strict-lower-triangular learnable entries
+        self.L_strict = nn.Parameter(torch.zeros(dim, dim))
+        # Pre-softplus diagonal entries
+        self.L_diag_raw = nn.Parameter(torch.zeros(dim))
+        self.dim = dim
+
+    def L(self):
+        L = torch.tril(self.L_strict, diagonal=-1)          # strict lower
+        L = L + torch.diag(F.softplus(self.L_diag_raw))     # + positive diag
+        return L
+
+    def R(self):
+        L = self.L()
+        return L @ L.T                                      # R = L L^T
+
+# Verification at random init — algebraic, not learned
+diss = CholeskyDissipation(dim=4)
+R = diss.R().detach()
+assert torch.allclose(R, R.T)                              # R = R^T
+eigs = torch.linalg.eigvalsh(R)
+assert (eigs &gt; 0).all()                                    # R &gt; 0
+</code></pre>
+
+<h2>Verdict</h2>
+
+<table>
+<thead>
+<tr>
+<th>Side of $(\mathbf{J} - \mathbf{R})$</th>
+<th>Goldstein Ch 8 directly verifies?</th>
+<th>Citation source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$\mathbf{J}^\top = -\mathbf{J}$ (skew-symmetry)</td>
+<td><strong>YES</strong> — Eq. (8.38d), with explicit construction in Eq. (8.38a)</td>
+<td>Goldstein Ch 8</td>
+</tr>
+<tr>
+<td>$\mathbf{R} = \mathbf{R}^\top \succeq \mathbf{0}$ (PSD)</td>
+<td><strong>NO</strong> — Ch 8 is monogenic-only; dissipation deferred to §1.5</td>
+<td>van der Schaft &amp; Jeltsema Ch 2 + Khalil Ch 6 (both not yet ingested)</td>
+</tr>
+<tr>
+<td>Full PH form $\dot{\mathbf{x}} = (\mathbf{J} - \mathbf{R})\nabla H + \mathbf{g}(\mathbf{x})\mathbf{u}$</td>
+<td><strong>NO</strong> — Ch 8 has no $\mathbf{R}$ and no input port $\mathbf{g}(\mathbf{x})\mathbf{u}$</td>
+<td>PH-book Ch 2</td>
+</tr>
+</tbody>
+</table>
+
+<div class="verdict-box">
+<strong>Bottom line:</strong> the Cholesky parameterization is correct
+(algebraic identity guarantees
+$\mathbf{R} = \mathbf{R}^\top \succeq \mathbf{0}$ from linear algebra alone)
+AND composes with Goldstein's $\mathbf{J}$ (Eq. 8.38a + 8.38d) cleanly. But
+<strong>Goldstein Ch 8 is not the citation for the R-side</strong> — it's the
+citation for the J-side only. The R-side citation lives in van der Schaft &amp;
+Jeltsema Ch 2 (Priority 1 of the proposed first ingest wave in the
+book-routing-map) and Khalil Ch 6 (Priority 2). This is one concrete reason
+those two chapters were ranked highest in the routing map.
+</div>
+
+<h2>Connection to SiS / CTPC</h2>
+<p>This synthesis confirms that the CTPC PHNN's Cholesky parameterization
+satisfies the port-Hamiltonian R-side requirement at every parameter setting —
+a hard architectural constraint per CLAUDE.md SiS design hierarchy step 1. The
+J-side is grounded in Goldstein's canonical symplectic Eq. (8.39). Together
+these close <strong>half of D6 of CTPC-Design-Rationale</strong> (PHNN
+passivity at the vector-field level); the remaining half (Q8b-discrete-time)
+is <strong>OPEN</strong> — integrator preservation is a separate question
+requiring Goldstein Ch 9 (Liouville's theorem §9.9 on phase-space-volume
+preservation) or Arnold Ch 8 (symplectic flow).</p>
+
+<h2>Connections</h2>
+<ul>
+<li><span class="wikilink">[[Port-Hamiltonian-Neural-Network]]</span> — the SiS architecture using $\mathbf{R} = \mathbf{L}\mathbf{L}^\top$</li>
+<li><span class="wikilink">[[Port-Hamiltonian-Systems]]</span> — the canonical concept page</li>
+<li><span class="wikilink">[[Hamiltonian-Mechanics]]</span> — the J-side substrate</li>
+<li><span class="wikilink">[[Dissipative-SymODEN]]</span> — the J-R-route paper using this exact Cholesky parameterization</li>
+<li><span class="wikilink">[[Rayleigh-Dissipation-Function]]</span> — Goldstein §1.5, the dissipation primitive Ch 8 defers to</li>
+<li><span class="wikilink">[[CTPC-Design-Rationale]]</span> — D6 closure (vector-field passivity)</li>
+<li><span class="wikilink">[[book-routing-map]]</span> — Goldstein Ch 8 is HIGH-priority for the Hamiltonian-NN agent</li>
+</ul>
+
+<h2>Open Questions</h2>
+<ol>
+<li><strong>Q8b-discrete-time remains open.</strong> Even with continuous-time
+$\mathbf{R} = \mathbf{L}\mathbf{L}^\top$ guaranteeing $\dot H \leq 0$, RK4 /
+dopri5 do <strong>not</strong> preserve discrete-time passivity. Goldstein
+Ch 8 doesn't address integrators — that's a separate question requiring
+Ch 9 (Liouville's theorem §9.9 on phase-space-volume preservation) or Arnold
+Ch 8 (symplectic flow). Candidate structure-preserving integrators: discrete
+gradient method (Gonzalez 1996), AVF (Quispel-McLaren 2008),
+Gauss-collocation.</li>
+<li>The input port $\mathbf{g}(\mathbf{x})\mathbf{u}$ in the full PH form is
+also outside Goldstein Ch 8. SiS architecturally banks this — see
+Port-Hamiltonian-Neural-Network commitment #7.</li>
+<li>Channel-decomposed dissipation
+$\mathbf{D}(q) = \sum_i \alpha_i \mathbf{D}_i(q)$ with each
+$\mathbf{D}_i = \mathbf{L}_i \mathbf{L}_i^\top$ preserves the PSD guarantee
+(sum of PSD is PSD) and adds D-HNN-style $\alpha$-scaling counterfactual
+hooks for dissipation-side concept-closure. The algebraic verification of
+the sum's PSD property is also independent of Goldstein Ch 8.</li>
+</ol>
+
+<h2>Sources</h2>
+<ul>
+<li><strong>Goldstein, Poole, Safko, <em>Classical Mechanics 3rd ed</em></strong> —
+Ch 8 "The Hamilton Equations of Motion" (pp. 334–368), specifically
+Eqs. (8.36), (8.37), (8.38a)–(8.38f), (8.39), (8.40), (8.41). Chapter opener
+(p. 334) restricts Ch 8 scope to monogenic forces, with velocity-dependent
+dissipation deferred to §1.5.</li>
+<li><strong>van der Schaft &amp; Jeltsema, <em>Port-Hamiltonian Systems
+Theory</em> Ch 2</strong> — canonical
+$(\mathbf{J} - \mathbf{R})\nabla H + \mathbf{g}(\mathbf{x})\mathbf{u}$
+definition. <strong>Cited via Port-Hamiltonian-Systems — book not yet
+ingested.</strong></li>
+<li><strong>Khalil, <em>Nonlinear Systems 3rd ed</em> Ch 6</strong> — passivity
+(positive-real, $L_2$-Lyapunov). <strong>Cited via wiki — book not yet
+ingested.</strong></li>
+<li><code>wiki/architectures/Port-Hamiltonian-Neural-Network.md</code> — SiS
+Cholesky parameterization details, Integrator Caveat for Q8b-discrete-time.</li>
+<li><code>wiki/papers/Dissipative-SymODEN.md</code> — Zhong et al. 2020 ICLR
+Workshop, the J-R-route paper this Cholesky design originates from.</li>
+</ul>
+
+<hr>
+<p style="font-size: 0.85em; color: #888;">Derived artifact — regenerated
+from <code>Goldstein-Ch8-J-vs-PH-Cholesky-R.md</code>. Do not edit directly.</p>
+
+</body>
+</html>

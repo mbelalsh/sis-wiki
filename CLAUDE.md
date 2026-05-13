@@ -72,7 +72,9 @@ about the wiki itself, not domain content.
 wiki-sis/
 ├── CLAUDE.md                  ← this file (agent instructions)
 ├── AGENTS.md                  ← symlink to CLAUDE.md
-├── raw/                       ← IMMUTABLE source documents (never modify)
+├── raw/                       ← canonical source documents (immutable except `_inbox/`)
+│   ├── _inbox/                ← TRANSIENT pre-curation area — weekly arXiv sweep drops PDFs here
+│   │   └── arxiv-sweep-YYYY-MM-DD/   ← one dated subfolder per sweep, contains digest.md + PDFs
 │   ├── books/
 │   │   ├── differential-geometry/
 │   │   ├── classical-mechanics/
@@ -90,7 +92,11 @@ wiki-sis/
 │   │   ├── formal-verification/      ← proof assistants, NN robustness verification
 │   │   ├── my-papers/                ← Bilal's own published/submitted papers (CTPC, etc.)
 │   │   └── sda/
-│   └── notes/                       ← informal notes, drafts, benchmark docs (e.g., PhyArch DP)
+│   ├── notes/                       ← informal notes, drafts, benchmark docs (e.g., PhyArch DP)
+│   └── writing/                     ← writing-craft corpus + exemplar papers + their public reviews
+│       ├── guides/                  ← writing craft PDFs (Strunk-White, Lipton, ICML tutorials, etc.)
+│       ├── exemplars/               ← accepted paper PDFs used as positive writing examples
+│       └── reviews/                 ← OpenReview review PDFs paired to exemplar papers
 ├── wiki/
 │   ├── index.md               ← master index (auto-updated on every ingest)
 │   ├── log.md                 ← append-only operation log
@@ -99,10 +105,73 @@ wiki-sis/
 │   ├── papers/                ← one summary page per ingested paper
 │   ├── books/                 ← chapter-level summaries
 │   ├── connections/           ← cross-cutting synthesis pages
-│   └── sis/                   ← SiS-specific design decisions and rationale
+│   ├── sis/                   ← SiS-specific design decisions and rationale
+│   ├── agents/                ← Agent definition files — system prompts, corpus pointers, tool lists. One file per expert domain. Maintained by human + agent together.
+│   └── agent_outputs/         ← Timestamped council session outputs and batch reports. Append-only. Each file named YYYY-MM-DD_<topic>.md. Not indexed as wiki pages — referenced from log.md only.
 └── assets/
     └── figures/               ← downloaded images from sources
 ```
+
+---
+
+## Inbox Convention (`raw/_inbox/`)
+
+The `raw/_inbox/` directory is a **transient pre-curation area**, NOT a canonical home
+for any paper. The weekly arXiv sweep
+(`~/Documents/Claude/Scheduled/arxiv-sweep-physics-architecture-sda`) drops candidate
+papers here in dated subfolders of the form `arxiv-sweep-YYYY-MM-DD/`.
+
+### Structure of a sweep subfolder
+
+```
+raw/_inbox/arxiv-sweep-YYYY-MM-DD/
+├── digest.md                          ← editorial summary with per-paper metadata
+├── 2305.12345__title-slug.pdf         ← one PDF per surfaced paper
+├── 2406.78901__another-title.pdf
+└── ...
+```
+
+`digest.md` carries one entry per paper with: title link, authors, arXiv ID, primary
+category, submission date, local relative link to the PDF, one-sentence summary, an
+explicit "hard or soft?" binary classification, any active-publishable-opening tag, the
+"SDA tie-in?" classification (direct / by analogy / none), and a one-sentence
+"why this might matter for SiS" note.
+
+### Triage rules (human-only)
+
+1. **Keep a paper** → move the PDF from `raw/_inbox/arxiv-sweep-YYYY-MM-DD/` to the
+   appropriate `raw/papers/<topic>/` subdirectory. The triage decision promotes the file
+   from transient to canonical.
+2. **Trash a paper** → delete the PDF from the inbox subfolder.
+3. **When the week is fully triaged** → optionally delete the entire
+   `arxiv-sweep-YYYY-MM-DD/` subfolder, or retain `digest.md` plus the audit trail.
+
+### What the agent must NOT do
+
+- Never treat a PDF in `raw/_inbox/` as a canonical source for ingest. Ingest applies
+  ONLY to papers that have been promoted to their permanent `raw/papers/<topic>/`
+  location by Bilal's manual triage.
+- Never cite `_inbox/` paths in wiki page frontmatter `sources:` fields. A `sources:`
+  entry pointing into `_inbox/` is a bug — fix it by re-grounding to the canonical path
+  the paper was moved to.
+- Never autonomously modify, move, rename, or delete files under `_inbox/`. Triage is
+  always a human decision.
+
+### What the agent SHOULD do
+
+- Treat the leading underscore as a system-folder signal: anything under `_inbox/` is
+  pre-curation noise that does not yet earn a place in the wiki schema.
+- During `lint`, surface stale inbox subfolders (e.g., `arxiv-sweep-*` folders untouched
+  for more than 14 days) as a triage backlog item for Bilal's attention.
+- If Bilal says "ingest: <path>" and the path is under `_inbox/`, refuse politely and
+  remind him to triage-promote the PDF first. The canonical path is the contract.
+
+### Relationship to the immutability rule
+
+The "Never modify files in `raw/`" rule applies to canonical subdirectories
+(`raw/books/`, `raw/papers/`, `raw/notes/`). The `raw/_inbox/` area is explicitly
+designed for human triage — moving and deleting files there is the intended workflow,
+not a violation.
 
 ---
 
@@ -124,6 +193,54 @@ hard_constraint_possible: <yes | no | partial | unknown>
 
 The `sis_relevance` field is mandatory — it tells Bilal at a glance what to prioritize.
 The `hard_constraint_possible` field tracks whether physics can be baked into architecture.
+
+### Agent file frontmatter (wiki/agents/ files only)
+
+Agent definition files use a DIFFERENT frontmatter spec — they are retrieval-persona
+definitions, not wiki content pages. The standard fields above (`title`, `tags`,
+`sources`, `created`, `updated`, `sis_relevance`, `hard_constraint_possible`) do
+NOT apply.
+
+```yaml
+---
+agent_name: <kebab-case name; matches file basename, e.g. Hamiltonian-NN-Agent>
+corpus_folders:
+  - raw/papers/<folder>/             # raw source folders the agent retrieves from
+corpus_wiki_pages:
+  - wiki/concepts/<page>.md          # synthesized wiki pages — higher priority than raw PDFs
+  - wiki/papers/<page>.md
+priority_doc: wiki/sis/<page>.md     # doc whose section ownership defines this agent's home
+tools: []                            # tool names available to the agent; filled at activation
+status: <draft | ready | active>     # draft = under construction; ready = corpus complete, not yet wired; active = in use
+---
+```
+
+`status` is mandatory — it tells Bilal at a glance which agents are wired in vs. still scaffolded.
+
+### Two-tier corpus pattern (mandatory for all agents)
+
+Every agent operates with two distinct corpus tiers:
+
+**Tier 1 — papers (wiki-mediated):**
+- **Purpose:** literature awareness, SOTA comparison, method citation
+- **Source:** `wiki/papers/` summaries + `wiki/concepts/` + `wiki/architectures/`
+- **Access pattern:** retrieved via index at query time
+- **When to use:** "what exists", "what has been tried", "how does X relate to CTPC"
+
+**Tier 2 — books (direct access):**
+- **Purpose:** mathematical derivation, first-principles proof, theorem verification
+- **Source:** `raw/books/` chapters, read directly — never summarized
+- **Access pattern:** routed via `# Book query protocol` table in agent file
+- **When to use:** standing question unanswerable from wiki alone, OR methodology claim requires derivation from first principles
+
+Agents must not use Tier 1 to answer Tier 2 questions. A wiki summary that says
+"Khalil proves passivity via storage functions" is not a substitute for reading
+Khalil Ch 6 when the question is whether a specific dissipation term satisfies
+the passivity condition.
+
+New agent files must include both tiers. A `# Book query protocol` section with
+a routing table is mandatory, even if the table has one row (as in
+Physics-Informed-Agent).
 
 ### Page structure template:
 
@@ -178,6 +295,49 @@ The `hard_constraint_possible` field tracks whether physics can be baked into ar
 - If a target page doesn't exist yet (forward reference), still use the hyphenated form. The link stays "broken" until the page is created — that's the right TODO marker.
 
 If you find a title-form wikilink in any wiki page (e.g. left over from older ingests), convert it as part of the next ingest touch on that file.
+
+---
+
+## Rendering Conventions (HTML alongside Markdown)
+
+Produce a sibling `.html` file alongside the `.md` file **if and only if BOTH**
+conditions hold:
+
+1. The output is being filed as a **permanent wiki artifact** (an `.md` is being
+   written somewhere under `wiki/`).
+2. The output contains **mathematical equations, matrices, or derivations**.
+
+**Do NOT produce HTML for:**
+
+- Ephemeral terminal answers (no `.md` written).
+- Wiki page ingests under `wiki/papers/`, `wiki/concepts/`, `wiki/architectures/`.
+  These are indexed summaries; the math-of-record lives in the raw source.
+- `wiki/log.md` appends and `wiki/index.md` updates.
+- Simple factual answers with no math.
+
+**Trigger matrix:**
+
+| Output scenario | `.md`? | `.html`? |
+|---|---|---|
+| Council session output (`wiki/agent_outputs/`) with math | yes | yes |
+| Book query filed as synthesis (`wiki/connections/`) with math | yes | yes |
+| Design-rationale page in `wiki/sis/` with math (e.g. CTPC Cholesky derivation) | yes | yes |
+| Book query answered in terminal only | no | no |
+| Ingest batch report (no math) | yes | no |
+| Paper / concept / architecture ingest | yes | **no** (explicit exclusion) |
+| Regular question answered in terminal | no | no |
+
+**Why:** math renders poorly in plain markdown viewers — Obsidian default
+rendering, GitHub preview, and downstream agent visual inspection all drop or
+mis-render LaTeX, matrix blocks, and multi-line derivations. A sibling `.html`
+with KaTeX or MathJax preserves the math for any future reader. For paper /
+concept ingests the math is canonically held in the raw source, so the wiki
+page is the summary, not the math-of-record.
+
+**How to produce the HTML:** same basename, same folder. Preserve the `.md`'s
+prose verbatim; render math via MathJax or KaTeX. The `.html` is a derived
+artifact — when the `.md` is updated, regenerate the `.html`. Never edit the
+`.html` as the source of truth.
 
 ---
 
@@ -319,7 +479,13 @@ Do NOT write theorem-proof style. Write intuition-implementation style.
 ## [YYYY-MM-DD] <operation> | <title> | <summary>
 ```
 
-Operations: `ingest`, `query`, `lint`, `create`, `update`, `contradiction-resolved`
+Operations: `ingest`, `query`, `lint`, `create`, `update`, `contradiction-resolved`, `agent-create`
+
+For `agent-create`, the second field is the agent-name (matching the basename of the file in `wiki/agents/`) and the third field is the one-line domain description:
+
+```
+## [YYYY-MM-DD] agent-create | <agent-name> | <one-line domain description>
+```
 
 This makes the log greppable:
 ```bash
@@ -355,13 +521,16 @@ Last updated: YYYY-MM-DD | Total pages: N
 
 ## SiS Design Decisions (N)
 ...
+
+## Agents (N)
+- [[agent-name]] — domain description — status
 ```
 
 ---
 
 ## What You Must Never Do
 
-- Never modify files in `raw/` — they are the immutable source of truth
+- Never modify files in canonical `raw/` subdirectories (`raw/books/`, `raw/papers/`, `raw/notes/`) — they are the immutable source of truth. The `raw/_inbox/` area is exempt by design — see the Inbox Convention section.
 - Never fabricate citations, page numbers, or author claims
 - Never assert a claim without grounding it in a raw source or existing wiki page
 - Never write theorem-proof style — always intuition-implementation style
