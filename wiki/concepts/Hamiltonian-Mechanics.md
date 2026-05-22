@@ -3,7 +3,7 @@ title: Hamiltonian Mechanics
 tags: [classical-mechanics, hamiltonian, conservation-laws, symplectic, phase-space, foundational]
 sources: [raw/papers/interpretability/HNN.pdf]
 created: 2026-05-08
-updated: 2026-05-08
+updated: 2026-05-21
 sis_relevance: critical
 hard_constraint_possible: yes
 ---
@@ -97,6 +97,8 @@ Hamiltonian mechanics is the **structural foundation** for SiS architectures tar
 - [[Symplectic-Gradient]] — the vector field `S_H = (∂H/∂p, −∂H/∂q)` whose integration gives Hamiltonian flow
 - [[Hamiltonian-Neural-Network]] — the architecture that parameterizes `H` with a neural net
 - [[HNN]] — paper that introduced the NN parameterization
+- [[Newtonian-Mechanics]] — the formalism Hamiltonian mechanics reformulates; reached from the Lagrangian via the Legendre transform
+- [[Two-Body-Problem]] — two-body orbital motion is exactly Hamiltonian; the conservative core of the CTPC Predictor
 - [[Lagrangian-Mechanics]] — Legendre-dual formulation; `L(q, q̇) = pq̇ − H(q,p)`
 - [[Rayleigh-Dissipation-Function]] — non-conservative extension via a second scalar function
 - [[Helmholtz-Decomposition]] — alternative way to add dissipation: decompose dynamics into rotational + irrotational components

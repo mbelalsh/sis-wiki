@@ -130,6 +130,14 @@ When a question requires mathematical derivation or formal proof, consult
 and theorems — **do not summarize**. Routing below is sourced from
 [[book-routing-map]] (Geometric-DL-Agent rows only).
 
+**Classical-mechanics delegation.** This agent owns the NN *realization* of
+symmetry (group convolution, equivariant layers). The *physics* of symmetry —
+Noether's theorem, symmetry reduction, Lagrangian/Hamiltonian mechanics on
+manifolds, rigid-body kinematics — is owned by [[Classical-Mechanics-Agent]],
+the canonical owner of the Goldstein + Arnold corpus. The differential-geometry
+books (Tu) remain this agent's own Tier-2; the Goldstein/Arnold rows are
+delegated.
+
 ## Book routing for this agent
 
 | Question type | Book path | Chapter |
@@ -142,11 +150,7 @@ and theorems — **do not summarize**. Routing below is sourced from
 | Is this Lie group / matrix-exponential / SO(n) / GL(n) construction valid? (continuous-group machinery currently missing from wiki) | `raw/books/differential-geometry/Intro_Manifolds.pdf` | Ch 15 |
 | Is this Lie algebra / so(n) / sl(n) / left-invariant vector field / Lie-algebra-homomorphism statement valid? | `raw/books/differential-geometry/Intro_Manifolds.pdf` | Ch 16 |
 | Is this k-form / alternating-multilinear / wedge-product / exterior-derivative statement valid? | `raw/books/differential-geometry/Intro_Manifolds.pdf` | Ch 3-4, Ch 17-19 |
-| Is this differential-forms-in-mechanics formulation valid (rigorous geometric form)? | `raw/books/classical-mechanics/Arnold_1989_MMCM.pdf` | Ch 7 |
-| Is this Lagrangian-on-manifold / Noether-conservation / symmetry-reduction claim valid? | `raw/books/classical-mechanics/Arnold_1989_MMCM.pdf` | Ch 4 |
-| Is this symmetry-group-reduction (Marsden-Weinstein-style) claim valid? | `raw/books/classical-mechanics/Arnold_1989_MMCM.pdf` | App 5 |
-| Is this rigid-body / Euler-angle / SO(3) kinematics statement valid? | `raw/books/classical-mechanics/GoldsteinPooleSafkoClassicalMechanics.pdf` | Ch 4, App A, App B |
-| Is this Noether-conservation / symmetry-group claim in canonical (Hamiltonian) form valid? | `raw/books/classical-mechanics/GoldsteinPooleSafkoClassicalMechanics.pdf` | Ch 2, Ch 9 §9.8 |
+| **Classical-mechanics first principles** — the *physics* of symmetry (Noether's theorem, symmetry reduction), Lagrangian/Hamiltonian mechanics on manifolds, rigid-body / SO(3) kinematics, differential forms in mechanics (Arnold Ch 4/7/App 5, Goldstein Ch 2/4/9 §9.8) | **→ Delegate to [[Classical-Mechanics-Agent]]** — canonical owner of the Goldstein + Arnold corpus | — |
 | Is this PH-on-manifolds / modulated-Dirac-structure / integrability construction valid? | `raw/books/dynamical-systems/Port_Hamiltonian_Book.pdf` | Ch 3 |
 | Is this equivariance-respecting kernel / covariance-function choice valid? (stationary, dot-product, mean-square continuity/differentiability) | `raw/books/ml-theory/GaussianProcesses.pdf` | Ch 4 |
 

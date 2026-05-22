@@ -3,7 +3,7 @@ title: Lagrangian Mechanics
 tags: [classical-mechanics, lagrangian, conservation-laws, action-principle, foundational]
 sources: [raw/papers/interpretability/LNN.pdf]
 created: 2026-05-08
-updated: 2026-05-08
+updated: 2026-05-21
 sis_relevance: critical
 hard_constraint_possible: yes
 ---
@@ -95,6 +95,7 @@ Lagrangian mechanics is the **coordinate-free foundation** for SiS architectures
 - [[Euler-Lagrange-Equation]] — the equation of motion derived from the action principle
 - [[Lagrangian-Neural-Network]] — the architecture that parameterizes `L` with a neural net
 - [[LNN]] — paper that introduced the NN parameterization
+- [[Newtonian-Mechanics]] — the formalism Lagrangian mechanics reformulates; `F = ma` recast through D'Alembert's principle
 - [[Hamiltonian-Mechanics]] — Legendre-dual formulation; `H(q,p) = p·q̇ − L(q,q̇)`
 - [[Hamiltonian-vs-Lagrangian-Duality]] — design-decision synthesis for choosing between formulations
 - [[Symplectic-Gradient]] — the Hamiltonian-side analogue of the Euler-Lagrange operator

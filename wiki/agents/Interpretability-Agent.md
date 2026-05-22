@@ -162,13 +162,19 @@ contribute *foundational grounding* (certificate-style interpretability of
 `Ḣ ≤ 0`, physical semantics of HNN/LNN) rather than core content. Expect to
 trigger book queries less often than the other agents.
 
+**Delegation.** First-principles classical-mechanics derivations route to
+[[Classical-Mechanics-Agent]] (canonical owner of the Goldstein + Arnold
+corpus); Khalil Lyapunov/passivity cross-claims route to [[Hamiltonian-NN-Agent]].
+The only book row this agent retains directly is the Gaussian-Processes
+regression baseline.
+
 ## Book routing for this agent
 
 | Question type | Book path | Chapter |
 |---|---|---|
 | Is this Bayesian-regression / GP function-space-posterior / equivalent-kernel derivation valid? (interpretability comparison baseline against CBM-CTPC and HNN-CTPC) | `raw/books/ml-theory/GaussianProcesses.pdf` | Ch 2 |
-| Is the certificate-style interpretability of `Ḣ ≤ 0` grounded in canonical Lyapunov / passivity theory? (indirect grounding for Hamiltonian-NN cross-claims) | `raw/books/dynamical-systems/Khalil-3rd.pdf` | Ch 4, Ch 6 |
-| Is the physical semantics of what HNN/LNN actually learn consistent with classical Hamiltonian / Lagrangian mechanics? (indirect grounding) | `raw/books/classical-mechanics/GoldsteinPooleSafkoClassicalMechanics.pdf` | Ch 2, Ch 8 |
+| Is the certificate-style interpretability of `Ḣ ≤ 0` grounded in canonical Lyapunov / passivity theory? | **→ Delegate to [[Hamiltonian-NN-Agent]]** (richer Khalil Ch 4 / Ch 6 routing) | — |
+| Is the physical semantics of what HNN/LNN actually learn consistent with classical Hamiltonian / Lagrangian mechanics? | **→ Delegate to [[Classical-Mechanics-Agent]]** (canonical owner of the Goldstein + Arnold corpus) | — |
 
 ## Trigger condition
 

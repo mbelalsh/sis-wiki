@@ -93,10 +93,15 @@ wiki-sis/
 │   │   ├── my-papers/                ← Bilal's own published/submitted papers (CTPC, etc.)
 │   │   └── sda/
 │   ├── notes/                       ← informal notes, drafts, benchmark docs (e.g., PhyArch DP)
-│   └── writing/                     ← writing-craft corpus + exemplar papers + their public reviews
-│       ├── guides/                  ← writing craft PDFs (Strunk-White, Lipton, ICML tutorials, etc.)
-│       ├── exemplars/               ← accepted paper PDFs used as positive writing examples
-│       └── reviews/                 ← OpenReview review PDFs paired to exemplar papers
+│   └── writing/                     ← writing-craft corpus, organized by the three-layer agentic model (Layer 0 / 1a / 1b)
+│       ├── generic/                 ← Layer 0 — universal writing craft (Strunk-White, Williams & Bizup, math-writing)
+│       ├── papers/                  ← Layer 1a — paper-writing
+│       │   ├── guides/              ← paper-writing craft PDFs
+│       │   ├── exemplars/           ← accepted paper PDFs used as positive writing examples
+│       │   └── reviews/             ← OpenReview review PDFs paired to exemplar papers
+│       └── proposals/               ← Layer 1b — proposal-writing
+│           ├── guides/              ← proposal-writing craft PDFs
+│           └── exemplars/           ← funded proposal PDFs used as positive examples
 ├── wiki/
 │   ├── index.md               ← master index (auto-updated on every ingest)
 │   ├── log.md                 ← append-only operation log

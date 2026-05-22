@@ -45,15 +45,16 @@ Total: ~4,536 pages across 9 books.
 
 ## Agent Domains (Targets)
 
-The wiki currently has 5 READY agents and several SHALLOW/future agents. Routing
-targets are:
+The wiki currently has 6 book-served READY agents plus Orbital-Mechanics-Agent
+(draft). Routing targets are:
 
+- **CM** = Classical-Mechanics-Agent (status: ready) — created 2026-05-21; canonical owner of the Goldstein + Arnold corpus. The Newtonian / Lagrangian / Hamiltonian chapters of Books 1–2, marked **HNN** in the per-chapter tables below, are now primarily **CM** territory — HNN and the other agents consult CM for first-principles classical-mechanics derivations.
 - **HNN** = Hamiltonian-NN-Agent (status: ready)
 - **INT** = Interpretability-Agent (status: ready)
 - **GDL** = Geometric-DL-Agent (status: ready)
 - **NODE** = Neural-ODE-Agent (status: ready)
 - **PIML** = Physics-Informed-Agent (status: ready)
-- **SDA** = future Space Domain Awareness / orbital-mechanics agent (not yet created)
+- **SDA** = Orbital-Mechanics-Agent (status: ready) — created 2026-05-21, Tier-1 corpus built by the 2026-05-21 Wakker/Curtis ingest wave. The agent the per-chapter tables call "SDA" / "future SDA agent" now exists, as the Layer-1 child of CM.
 - **UQ** = future Uncertainty-Quantification agent (not yet created)
 - **SKIP** = chapter is not relevant to any current or near-term agent; do not ingest
 
@@ -591,12 +592,36 @@ is critical** for this agent right now. Lower-priority candidates:
 - **Khalil Ch 4 Lyapunov** for stability-aware physics-informed loss design.
 - (Books are not the bottleneck for this agent.)
 
-### Future SDA Agent — when created, ingest from:
+### Classical-Mechanics-Agent (READY) — top targets
 
-1. **Wakker Ch 9 (Clohessy-Wiltshire) + Ch 11 (reference frames) + Ch 20 (perturbations)**.
-2. **Curtis Ch 4 (orbits in 3D, J2) + Ch 2 (two-body) + Appendix D (MATLAB algorithms)**.
-3. **Goldstein Ch 3 (Central Force) + Ch 5.8 (Precession of satellite orbits)**.
-4. **Arnold Ch 10 (Perturbation theory, averaging)**.
+Layer-0 agent (created 2026-05-21); book-served, canonical owner of the
+Goldstein + Arnold corpus. Other agents delegate classical-mechanics
+first-principles derivations here.
+
+1. **Goldstein Ch 8-9 (pp 334-429)** — Hamilton eq + Legendre transform + canonical transformations + symplectic + Poisson + Liouville. HIGH.
+2. **Goldstein Ch 2 (pp 34-69)** — variational principle + Euler-Lagrange + Noether. HIGH.
+3. **Arnold Ch 8-9 (pp 201-270)** — symplectic manifolds + Hamilton-Jacobi, rigorous geometric form. HIGH.
+4. **Goldstein Ch 1 (pp 1-33)** — Newton's laws + constraints + D'Alembert + §1.5 Rayleigh dissipation. MEDIUM.
+5. **Goldstein Ch 10 (pp 430-482)** — Hamilton-Jacobi + action-angle variables. MEDIUM.
+6. **Arnold Ch 3-4 (pp 55-97)** — variational principles + Lagrangian on manifolds + Noether, geometric form. MEDIUM.
+7. **Arnold Ch 1-2 (pp 3-54)** — Newtonian foundations, geometric viewpoint. MEDIUM.
+8. **Arnold App 5/6/14** — dynamical systems with symmetries + normal forms + Poisson structures. LOW-MEDIUM.
+
+### Orbital-Mechanics-Agent (READY) — corpus wave
+
+Layer-1 agent (created 2026-05-21), child of Classical-Mechanics-Agent — realizes
+the formerly-planned "Future SDA Agent." **status: ready** — sources 1–5 of the wave
+below were ingested 2026-05-21 (Wakker Ch 5/6/11/20–21 + Curtis Ch 4), building the
+Tier-1 corpus; items 6–8 remain as enhancements (notably Wakker Ch 9 for the RTN frame).
+
+1. **Wakker Ch 5 (two-body, pp 117-156)** — the conservative Hamiltonian core. FIRST INGEST (2026-05-21).
+2. **Wakker Ch 11 (reference frames + orbital elements, pp 243-284)** — frame/element vocabulary; grounds D6. HIGH.
+3. **Wakker Ch 20-21 (perturbing forces + J2/drag/radiation, pp 527-584)** — the perturbation hierarchy. HIGH.
+4. **Wakker Ch 9 (Clohessy-Wiltshire / RTN, pp 203-218)** — relative motion. MEDIUM.
+5. **Curtis Ch 4 (orbits in 3D + state↔elements + J2, pp 149-191)** — implementation patterns. HIGH.
+6. **Curtis Ch 2-3 (two-body + Kepler's eq) + App D (MATLAB algorithms)** — algorithm templates for Python ports. MEDIUM.
+7. **Goldstein Ch 3 (Central Force) + §5.8 (satellite precession)** — formalism-level central-force grounding. MEDIUM.
+8. **Arnold Ch 6 (rigid bodies) + Ch 10 (perturbation theory, averaging)** — attitude + averaging. MEDIUM.
 
 ### Future UQ Agent — when created, ingest from:
 
@@ -609,7 +634,7 @@ is critical** for this agent right now. Lower-priority candidates:
 - Most of Wakker Ch 7-8, 10, 12-19 (specialized astrodynamics scenarios).
 - Curtis Ch 6, 8, 11 (maneuvers, rocket dynamics — not orbit-prediction relevant).
 - Goldstein Ch 6 (oscillations), Ch 7 (special relativity), Ch 13 (continuous fields).
-- Arnold Ch 1, 2, 5 (Newtonian intro), Ch 6 (rigid bodies — defer to SDA agent).
+- Arnold Ch 5 (oscillations). [Ch 1-2 Newtonian intro now route to Classical-Mechanics-Agent; Ch 6 rigid bodies routes to Orbital-Mechanics-Agent — no longer skip.]
 - Tu Part VI Integration, Part VII De Rham (out of scope for current agents).
 
 ---

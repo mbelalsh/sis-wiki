@@ -150,20 +150,22 @@ When a question requires mathematical derivation or formal proof, consult
 and theorems — **do not summarize**. Routing below is sourced from
 [[book-routing-map]] (Hamiltonian-NN-Agent rows only).
 
+**Classical-mechanics delegation.** [[Classical-Mechanics-Agent]] is the
+canonical owner of the Goldstein + Arnold corpus. First-principles
+classical-mechanics derivations — Hamilton's equations, the Legendre transform,
+canonical transformations, Poisson brackets, Noether's theorem, the symplectic
+structure, Hamilton–Jacobi theory, Rayleigh dissipation — route there. This
+agent verifies the *neural-architecture* claim (HNN / LNN / PHNN / D-HNN); it
+consults Classical-Mechanics-Agent for whether the underlying classical physics
+is stated correctly. The table below therefore keeps only this agent's own
+Tier-2 books — the port-Hamiltonian text and Khalil — and delegates the
+Goldstein/Arnold rows.
+
 ## Book routing for this agent
 
 | Question type | Book path | Chapter |
 |---|---|---|
-| Is this Hamilton-equations / Legendre / symplectic-matrix-form derivation valid? (canonical Eqs. 8.18, 8.38a, 8.39) | `raw/books/classical-mechanics/GoldsteinPooleSafkoClassicalMechanics.pdf` | Ch 8 |
-| Is this canonical-transformation / Poisson-bracket / Liouville's-theorem / symmetry-group statement valid? | `raw/books/classical-mechanics/GoldsteinPooleSafkoClassicalMechanics.pdf` | Ch 9 |
-| Is this Hamilton-Jacobi / action-angle claim valid? | `raw/books/classical-mechanics/GoldsteinPooleSafkoClassicalMechanics.pdf` | Ch 10 |
-| Is this variational-principle / Noether-conservation derivation valid? | `raw/books/classical-mechanics/GoldsteinPooleSafkoClassicalMechanics.pdf` | Ch 2 |
-| Is this Rayleigh-dissipation-function claim valid? | `raw/books/classical-mechanics/GoldsteinPooleSafkoClassicalMechanics.pdf` | Ch 1 §1.5 |
-| Is this symplectic-manifold / Hamiltonian phase-flow / Lie-algebra-of-Hamiltonian-functions statement valid? | `raw/books/classical-mechanics/Arnold_1989_MMCM.pdf` | Ch 8 |
-| Is this Hamilton-Jacobi statement valid in rigorous geometric form? | `raw/books/classical-mechanics/Arnold_1989_MMCM.pdf` | Ch 9 |
-| Is this Hamilton's-equations-from-variational-principle / Liouville's-theorem statement valid (geometric form)? | `raw/books/classical-mechanics/Arnold_1989_MMCM.pdf` | Ch 3 |
-| Is this Lagrangian-on-manifolds / Noether-on-manifolds statement valid? | `raw/books/classical-mechanics/Arnold_1989_MMCM.pdf` | Ch 4 |
-| Is this dynamical-systems-with-symmetries / normal-form-of-quadratic-H / Poisson-structure claim valid? | `raw/books/classical-mechanics/Arnold_1989_MMCM.pdf` | App 5, App 6, App 14 |
+| **Classical-mechanics first principles** — Hamilton's equations, Legendre transform, canonical transformations, Poisson brackets, Noether, symplectic structure, Hamilton–Jacobi, Rayleigh dissipation (Goldstein Ch 1-2/8-10, Arnold Ch 3-4/8-9/App 5-6-14) | **→ Delegate to [[Classical-Mechanics-Agent]]** — canonical owner of the Goldstein + Arnold corpus | — |
 | Does dissipation satisfy the (J−R) port-Hamiltonian structure? (canonical PH definition `ẋ = (J−R)∇H + g(x)u`) | `raw/books/dynamical-systems/Port_Hamiltonian_Book.pdf` | Ch 2 |
 | Is this input-state-output PH formulation (linear-resistive / ISO / memristive / relation to classical H) valid? | `raw/books/dynamical-systems/Port_Hamiltonian_Book.pdf` | Ch 4 |
 | Does this system satisfy port-Hamiltonian passivity? (available/required storage, shifted PH) | `raw/books/dynamical-systems/Port_Hamiltonian_Book.pdf` | Ch 7 |
