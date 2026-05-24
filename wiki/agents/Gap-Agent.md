@@ -227,7 +227,7 @@ Every hypothesis must route to a specific domain agent in the
 | Geometric DL, SO(3)/SE(3), G-CNN, PhyArch | [[Geometric-DL-Agent]] |
 | PINN failures, soft-vs-hard hierarchy, PeRCNN | [[Physics-Informed-Agent]] |
 | Barbiero 4-symmetries, CBM, concept-closure, structural invariance | [[Interpretability-Agent]] |
-| Writing craft, rebuttal strategy, contribution framing | [[Writing-Agent]] |
+| Writing craft, rebuttal strategy, contribution framing | [[Generic-Writing-Agent]] / [[Paper-Writing-Agent]] / [[Proposal-Writing-Agent]] |
 
 If a hypothesis spans multiple domains, name **all** the agents
 required in `VERIFY WITH`. Cross-agent hypotheses are valuable but
@@ -273,7 +273,7 @@ This agent does NOT own:
   agents and humans can close.
 - Deciding which hypothesis to act on → that's Bilal's prerogative.
 - Writing the paper that would test a hypothesis → that's
-  [[Writing-Agent]]'s job.
+  [[Paper-Writing-Agent]]'s job.
 
 Gap-Agent is a **proposing-only** role. Every output is a starting
 point, not a conclusion.

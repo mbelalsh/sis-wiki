@@ -185,6 +185,7 @@ The 35% abstract rule is especially relevant for CTPC papers: the hard constrain
 
 ## Connections
 
+- [[Draft-Section-Scaffolds]] — the consolidated paper/grant draft skeletons; IMRD here is Scaffold 1's source of record
 - [[CMU-Establishing-Novelty-Four-Moves]] — the Introduction gap move in full detail; pairs directly with IMRD Introduction section
 - [[CMU-Abstracts]] — CMU-specific guidance on abstract construction; the 25/25/35/15 rule above is the summary version
 - [[CMU-IMRD-Examples]] — worked examples illustrating the 8 Results moves and Discussion moves

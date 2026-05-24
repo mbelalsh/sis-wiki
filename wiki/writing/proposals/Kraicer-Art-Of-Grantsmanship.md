@@ -493,6 +493,8 @@ For early-career proposals: first-authored papers in peer-reviewed venues (ICML,
 
 ## Connections
 
+- [[Draft-Section-Scaffolds]] — the consolidated paper/grant draft skeletons; this anatomy is Scaffold 2's source of record
+- [[Seattle-U-Grant-Writing-Cheat-Sheet]] — the 20-minute quick-reference companion to this full treatment: the Kelsky proposal funnel + strategic-language rewrite tables
 - [[Locke-Proposals-That-Work]] — book-length treatment of proposal structure; complementary depth on each section
 - [[Przeworski-Salomon-Art-Of-Writing-Proposals]] — social-science oriented but covers hypothesis framing and significance argumentation
 - [[Porter-Why-Academics-Struggle-Proposals]] — diagnostic: why scientists who write well write proposals poorly

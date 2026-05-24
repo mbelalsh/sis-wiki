@@ -10,8 +10,8 @@ corpus_wiki_pages:
   - wiki/concepts/Rayleigh-Dissipation-Function.md
   - wiki/connections/Hamiltonian-vs-Lagrangian-Duality.md
 priority_doc: wiki/sis/CTPC-Design-Rationale.md
-tools: []   # to be filled later
-status: ready
+tools: [Read, Grep, Glob]   # active 2026-05-22 — wired as a Claude Code subagent in .claude/agents/
+status: active
 ---
 
 # System prompt

@@ -200,6 +200,7 @@ SiS will submit proposals to NSF (SBIR Phase I/II), AFOSR (basic research), DARP
 - [[CMU-Literature-Reviews]] — for dissertation proposals where Background must be a literature review
 - [[CMU-Abstracts]] — for the Project Summary / abstract component of the Introduction
 - [[Kraicer-Art-Of-Grantsmanship]] — deeper treatment of grant-specific rhetorical strategy
+- [[Seattle-U-Grant-Writing-Cheat-Sheet]] — quick-reference funnel + strategic-language checklist; overlapping six-section structure and criteria-mirroring
 - [[Locke-Proposals-That-Work]] — book-length treatment of research proposal structure and argumentation
 - [[Przeworski-Salomon-Art-Of-Writing-Proposals]] — social science proposal strategy; useful for framing research questions
 - [[Porter-Why-Academics-Struggle-Proposals]] — diagnoses common failure modes that this handout's tips implicitly guard against

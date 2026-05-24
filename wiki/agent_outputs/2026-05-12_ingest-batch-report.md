@@ -11,18 +11,18 @@ SHALLOW to READY.
 
 ## 1. Per-Ingest Status
 
-| # | Source PDF | Status | Pages created / updated |
-|---|---|---|---|
-| 1 | `geometric-dl/GeometricDL.pdf` (Bronstein et al. 2021, 160p proto-book) | ✅ Success | papers/Geometric-Deep-Learning + concepts/Geometric-Priors |
-| 2 | `geometric-dl/GroupEquiCNN.pdf` (Cohen & Welling 2016, ICML, 12p) | ✅ Success | papers/Group-Equivariant-CNN + concepts/Group-Convolution |
-| 3 | `geometric-dl/GeometricDLMath.pdf` (Sáez de Ocáriz Borde & Bronstein 2025, 78p) | ✅ Success | books/Math-Foundations-of-GDL (first wiki/books/ entry) |
-| 4 | `neural-odes/NODE.pdf` (Chen et al. 2018, NeurIPS, 18p) | ✅ Success | papers/NODE + concepts/Adjoint-Sensitivity-Method |
-| 5 | `neural-odes/DissectingNODE.pdf` (Massaroli et al. 2020, NeurIPS, 23p) | ✅ Success | papers/Dissecting-NODE; updated concepts/Adjoint-Sensitivity-Method (generalized adjoint) |
-| 6 | `physics-informed/PINNChallenges.pdf` (Krishnapriyan et al. 2021, NeurIPS, 13p) | ✅ Success | papers/PINN-Challenges |
-| 7 | `physics-informed/MLWithPhyKnowledge.pdf` (Watson et al. 2025, TMLR, 61p) | ✅ Success | papers/PIML-Survey; updated concepts/Adjoint-Sensitivity-Method (stiff-system caveat) |
-| 8 | `physics-informed/EncodingPhysics.pdf` (Rao et al. 2023, Nat. Mach. Intell., 18p) | ✅ Re-verification | No new pages — already canonical at papers/PeRCNN (ingested 2026-05-08); re-read confirmed existing summary accurate |
-| 9 | `formal-verification/FVerify_NODE.pdf` (Zeqiri et al. 2023, ICLR, GAINS, 28p) | ✅ Success | papers/GAINS-Certified-NODE |
-| 10 | `formal-verification/SafeDNN_NASA.pdf` (Pasareanu et al., NASA Ames, 37p slide deck) | ✅ Success | papers/SafeDNN-NASA |
+| #   | Source PDF                                                                           | Status            | Pages created / updated                                                                                              |
+| --- | ------------------------------------------------------------------------------------ | ----------------- | -------------------------------------------------------------------------------------------------------------------- |
+| 1   | `geometric-dl/GeometricDL.pdf` (Bronstein et al. 2021, 160p proto-book)              | ✅ Success         | papers/Geometric-Deep-Learning + concepts/Geometric-Priors                                                           |
+| 2   | `geometric-dl/GroupEquiCNN.pdf` (Cohen & Welling 2016, ICML, 12p)                    | ✅ Success         | papers/Group-Equivariant-CNN + concepts/Group-Convolution                                                            |
+| 3   | `geometric-dl/GeometricDLMath.pdf` (Sáez de Ocáriz Borde & Bronstein 2025, 78p)      | ✅ Success         | books/Math-Foundations-of-GDL (first wiki/books/ entry)                                                              |
+| 4   | `neural-odes/NODE.pdf` (Chen et al. 2018, NeurIPS, 18p)                              | ✅ Success         | papers/NODE + concepts/Adjoint-Sensitivity-Method                                                                    |
+| 5   | `neural-odes/DissectingNODE.pdf` (Massaroli et al. 2020, NeurIPS, 23p)               | ✅ Success         | papers/Dissecting-NODE; updated concepts/Adjoint-Sensitivity-Method (generalized adjoint)                            |
+| 6   | `physics-informed/PINNChallenges.pdf` (Krishnapriyan et al. 2021, NeurIPS, 13p)      | ✅ Success         | papers/PINN-Challenges                                                                                               |
+| 7   | `physics-informed/MLWithPhyKnowledge.pdf` (Watson et al. 2025, TMLR, 61p)            | ✅ Success         | papers/PIML-Survey; updated concepts/Adjoint-Sensitivity-Method (stiff-system caveat)                                |
+| 8   | `physics-informed/EncodingPhysics.pdf` (Rao et al. 2023, Nat. Mach. Intell., 18p)    | ✅ Re-verification | No new pages — already canonical at papers/PeRCNN (ingested 2026-05-08); re-read confirmed existing summary accurate |
+| 9   | `formal-verification/FVerify_NODE.pdf` (Zeqiri et al. 2023, ICLR, GAINS, 28p)        | ✅ Success         | papers/GAINS-Certified-NODE                                                                                          |
+| 10  | `formal-verification/SafeDNN_NASA.pdf` (Pasareanu et al., NASA Ames, 37p slide deck) | ✅ Success         | papers/SafeDNN-NASA                                                                                                  |
 
 **Failures: 0.** All 10 source PDFs were under canonical `raw/papers/<topic>/`
 (none in `_inbox/`); no CLAUDE.md triage rule triggered.
@@ -62,15 +62,15 @@ extended in both ingests 5 (generalized adjoint for path-distributed losses) and
 
 ## 3. Lint Findings
 
-| Check | Status |
-|---|---|
-| Page counts consistent across `index.md` + filesystem | ✅ 45 pages across 7 dirs (concepts 14, architectures 6, papers 16, books 1, connections 1, sis 5, agents 2) |
-| All 12 new pages have valid `sis_relevance` frontmatter | ✅ Verified — values: 4 critical (Geometric-DL, Geometric-Priors, NODE, PINN-Challenges) + 6 high (Group-Equivariant-CNN, Group-Convolution, Adjoint, Dissecting-NODE, PIML-Survey, SafeDNN-NASA) + 1 medium (Math-Foundations-of-GDL) + 1 critical (GAINS) |
-| All 12 new pages have `hard_constraint_possible: yes` | ✅ Verified |
-| No pages with `hard_constraint_possible: unknown` | ✅ Clean |
-| Broken wikilinks | ⚠️ One historical reference `[[Port-Hamiltonian-Neural-Networks]]` (plural) in `wiki/log.md` lines 13 + 20 — both inside append-only log entries from 2026-05-09 and 2026-05-10. The 2026-05-10 log explicitly documents the singular rename. **Not actionable** per append-only log philosophy. |
-| Orphan check (inbound wikilinks on new pages) | ⚠️ Imperfect — some new pages are referenced only by other new-this-batch pages (e.g. Geometric-Deep-Learning ↔ Group-Equivariant-CNN ↔ Group-Convolution form a self-contained cluster). All new pages ARE wikilink-reachable from existing wiki content via the SiS/CTPC connection sections + index entries; no true orphans. |
-| `wiki/agent_outputs/` directory | ⚠️ **New directory, not yet in CLAUDE.md canonical schema.** Same status as `wiki/agents/` (codified 2026-05-12). Flag for next CLAUDE.md update if Bilal wants the agent-outputs layer formalized. |
+| Check                                                   | Status                                                                                                                                                                                                                                                                                                                           |
+| ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Page counts consistent across `index.md` + filesystem   | ✅ 45 pages across 7 dirs (concepts 14, architectures 6, papers 16, books 1, connections 1, sis 5, agents 2)                                                                                                                                                                                                                      |
+| All 12 new pages have valid `sis_relevance` frontmatter | ✅ Verified — values: 4 critical (Geometric-DL, Geometric-Priors, NODE, PINN-Challenges) + 6 high (Group-Equivariant-CNN, Group-Convolution, Adjoint, Dissecting-NODE, PIML-Survey, SafeDNN-NASA) + 1 medium (Math-Foundations-of-GDL) + 1 critical (GAINS)                                                                       |
+| All 12 new pages have `hard_constraint_possible: yes`   | ✅ Verified                                                                                                                                                                                                                                                                                                                       |
+| No pages with `hard_constraint_possible: unknown`       | ✅ Clean                                                                                                                                                                                                                                                                                                                          |
+| Broken wikilinks                                        | ⚠️ One historical reference `[[Port-Hamiltonian-Neural-Networks]]` (plural) in `wiki/log.md` lines 13 + 20 — both inside append-only log entries from 2026-05-09 and 2026-05-10. The 2026-05-10 log explicitly documents the singular rename. **Not actionable** per append-only log philosophy.                                 |
+| Orphan check (inbound wikilinks on new pages)           | ⚠️ Imperfect — some new pages are referenced only by other new-this-batch pages (e.g. Geometric-Deep-Learning ↔ Group-Equivariant-CNN ↔ Group-Convolution form a self-contained cluster). All new pages ARE wikilink-reachable from existing wiki content via the SiS/CTPC connection sections + index entries; no true orphans. |
+| `wiki/agent_outputs/` directory                         | ⚠️ **New directory, not yet in CLAUDE.md canonical schema.** Same status as `wiki/agents/` (codified 2026-05-12). Flag for next CLAUDE.md update if Bilal wants the agent-outputs layer formalized.                                                                                                                              |
 
 **No contradictions detected** between new pages and existing content. All
 new pages explicitly link to existing pages they touch (PhyArch,
@@ -80,18 +80,18 @@ CTPC-Design-Rationale, Latent-NCDE-Corrector, PHNN, etc.).
 
 ## 4. Agent Promotions (Relaxed Criterion: 5+ Total Wiki Pages Anchored)
 
-| Agent | Before | New pages added by this batch | After | Status |
-|---|---|---|---|---|
-| **Hamiltonian-NN-Agent** | READY (18 pages) | — | READY (18 pages) | unchanged |
-| **Interpretability-Agent** | READY (6 pages) | — | READY (6 pages) | unchanged |
-| **Geometric-DL-Agent** | SHALLOW (0) | Geometric-Deep-Learning, Geometric-Priors, Group-Equivariant-CNN, Group-Convolution, Math-Foundations-of-GDL (5) | **READY (5 pages)** | ✅ **PROMOTED** |
-| **Neural-ODE-Agent** | SHALLOW (2 pre-existing: NCDE concept, Latent-NCDE-Corrector) | NODE, Dissecting-NODE, Adjoint-Sensitivity-Method (3) | **READY (5 pages)** | ✅ **PROMOTED** |
-| **Physics-Informed-Agent** | SHALLOW (4 pre-existing: PeRCNN paper + 3 concept pages) | PINN-Challenges, PIML-Survey (2) | **READY (6 pages)** | ✅ **PROMOTED** |
-| **Formal-Verification-Agent** | THIN (0) | GAINS-Certified-NODE, SafeDNN-NASA (2) | SHALLOW (2 pages) | bootstrapped, needs 3 more to hit relaxed threshold |
-| **SDA-Agent** | THIN (0) | — | THIN (0) | unchanged |
-| **Symbolic-Physics-Agent** | THIN (0) | — | THIN (0) | unchanged |
-| **Uncertainty-Propagation-Agent** | THIN/SHALLOW (2) | — | THIN/SHALLOW (2) | unchanged |
-| **Neural-Operators-Agent** | THIN (0) | — | THIN (0) | unchanged |
+| Agent                             | Before                                                        | New pages added by this batch                                                                                    | After               | Status                                              |
+| --------------------------------- | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------- | --------------------------------------------------- |
+| **Hamiltonian-NN-Agent**          | READY (18 pages)                                              | —                                                                                                                | READY (18 pages)    | unchanged                                           |
+| **Interpretability-Agent**        | READY (6 pages)                                               | —                                                                                                                | READY (6 pages)     | unchanged                                           |
+| **Geometric-DL-Agent**            | SHALLOW (0)                                                   | Geometric-Deep-Learning, Geometric-Priors, Group-Equivariant-CNN, Group-Convolution, Math-Foundations-of-GDL (5) | **READY (5 pages)** | ✅ **PROMOTED**                                      |
+| **Neural-ODE-Agent**              | SHALLOW (2 pre-existing: NCDE concept, Latent-NCDE-Corrector) | NODE, Dissecting-NODE, Adjoint-Sensitivity-Method (3)                                                            | **READY (5 pages)** | ✅ **PROMOTED**                                      |
+| **Physics-Informed-Agent**        | SHALLOW (4 pre-existing: PeRCNN paper + 3 concept pages)      | PINN-Challenges, PIML-Survey (2)                                                                                 | **READY (6 pages)** | ✅ **PROMOTED**                                      |
+| **Formal-Verification-Agent**     | THIN (0)                                                      | GAINS-Certified-NODE, SafeDNN-NASA (2)                                                                           | SHALLOW (2 pages)   | bootstrapped, needs 3 more to hit relaxed threshold |
+| **SDA-Agent**                     | THIN (0)                                                      | —                                                                                                                | THIN (0)            | unchanged                                           |
+| **Symbolic-Physics-Agent**        | THIN (0)                                                      | —                                                                                                                | THIN (0)            | unchanged                                           |
+| **Uncertainty-Propagation-Agent** | THIN/SHALLOW (2)                                              | —                                                                                                                | THIN/SHALLOW (2)    | unchanged                                           |
+| **Neural-Operators-Agent**        | THIN (0)                                                      | —                                                                                                                | THIN (0)            | unchanged                                           |
 
 **Net effect:** 3 new READY agents (Geometric-DL, Neural-ODE,
 Physics-Informed) — the agent-council layer now has **5 of 10 domains**

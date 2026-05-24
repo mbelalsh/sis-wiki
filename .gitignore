@@ -7,3 +7,6 @@ raw/
 
 # Obsidian workspace state (personal — not shared)
 wiki/.obsidian/
+
+# Claude Code machine-local settings (personal — not shared)
+.claude/settings.local.json
